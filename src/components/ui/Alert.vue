@@ -1,72 +1,56 @@
 <template>
-  <div :class="['rounded-xl border p-4', variantClasses[variant].container]">
-    <div class="flex items-start gap-3">
-      <div :class="['-mt-0.5', variantClasses[variant].icon]">
-        <component :is="icons[variant]" />
-      </div>
-
-      <div>
-        <h4 class="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">
-          {{ title }}
-        </h4>
-
-        <p class="text-sm text-gray-500 dark:text-gray-400">{{ message }}</p>
-
-        <router-link
-          v-if="showLink"
-          :to="linkHref"
-          class="inline-block mt-3 text-sm font-medium text-gray-500 underline dark:text-gray-400"
-        >
-          {{ linkText }}
-        </router-link>
+  <transition name="fade">
+    <div
+      v-if="visible"
+      class="fixed top-20 right-4 z-50 w-[90%] max-w-sm"
+      :class="['rounded-xl border p-4 shadow-lg', variantClasses[variant].container]"
+    >
+      <div class="flex items-start gap-3">
+        <div :class="variantClasses[variant].icon">
+          <component :is="icons[variant]" />
+        </div>
+        <div>
+          <h4 class="font-semibold">{{ title }}</h4>
+          <p class="text-sm">{{ message }}</p>
+        </div>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { SuccessIcon, ErrorIcon, WarningIcon, InfoCircleIcon } from '@/icons'
-import { computed } from 'vue'
 
-interface AlertProps {
-  variant: 'success' | 'error' | 'warning' | 'info'
-  title: string
-  message: string
-  showLink?: boolean
-  linkHref?: string
-  linkText?: string
-}
-
-const props = withDefaults(defineProps<AlertProps>(), {
-  showLink: false,
-  linkHref: '#',
-  linkText: 'Learn more',
+defineProps({
+  variant: { type: String, default: 'info' },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  visible: { type: Boolean, default: true }
 })
 
 const variantClasses = {
-  success: {
-    container: 'border-success-500 bg-success-50 dark:border-success-500/30 dark:bg-success-500/15',
-    icon: 'text-success-500',
-  },
-  error: {
-    container: 'border-error-500 bg-error-50 dark:border-error-500/30 dark:bg-error-500/15',
-    icon: 'text-error-500',
-  },
-  warning: {
-    container: 'border-warning-500 bg-warning-50 dark:border-warning-500/30 dark:bg-warning-500/15',
-    icon: 'text-warning-500',
-  },
-  info: {
-    container:
-      'border-blue-light-500 bg-blue-light-50 dark:border-blue-light-500/30 dark:bg-blue-light-500/15',
-    icon: 'text-blue-light-500',
-  },
+  success: { container: 'border-green-500 bg-green-50', icon: 'text-green-500' },
+  error: { container: 'border-red-500 bg-red-50', icon: 'text-red-500' },
+  warning: { container: 'border-yellow-500 bg-yellow-50', icon: 'text-yellow-500' },
+  info: { container: 'border-blue-500 bg-blue-50', icon: 'text-blue-500' }
 }
 
 const icons = {
   success: SuccessIcon,
   error: ErrorIcon,
   warning: WarningIcon,
-  info: InfoCircleIcon,
+  info: InfoCircleIcon
 }
 </script>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(50px);
+}
+</style>

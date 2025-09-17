@@ -228,8 +228,13 @@ import {
   TableIcon,
   ListIcon,
   PlugInIcon,
+  EcommerceIcon,
+  ShippingIcon,
+  WarehouseIcon,
+  OrderIcon,
 } from "../../icons";
 import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
+import UserGroupIcon from '@/icons/UserGroupIcon.vue'
 import { useSidebar } from "@/composables/useSidebar";
 
 const route = useRoute();
@@ -243,12 +248,47 @@ const menuGroups = [
       {
         icon: GridIcon,
         name: "Dashboard",
-        subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+        subItems: [{ name: "Ecommerce", path: "/", pro: false },
+          { name: "Manage Users", path: "/admin/users", pro: false }
+        ],
       },
       {
-        icon: CalenderIcon,
-        name: "Calendar",
-        path: "/calendar",
+        icon: EcommerceIcon,
+        name: "E-commerce",
+        subItems: [
+          { name: "Products", path: "/admin/products", pro: false },
+          { name: "Create Product", path: "/admin/create-product", pro: false },
+          { name: "Categories", path: "/admin/categories", pro: false },
+          { name: "Suppliers", path: "/admin/suppliers", pro: false },
+        ],
+      },
+      {
+        icon: WarehouseIcon,
+        name: "Inventory",
+        subItems: [
+          { name: "Inventories", path: "/admin/inventories", pro: false },
+          { name: "Transactions", path: "/admin/transactions", pro: false },
+          { name: "Warehouses", path: "/admin/warehouses", pro: false },
+        ],
+      },
+      {
+        icon: OrderIcon,
+        name: "Orders",
+        subItems: [
+          { name: "Order List", path: "/admin/orders", pro: false },
+          { name: "Create order", path: "/admin/create-order", pro: false },
+          { name: "Receiving", path: "/admin/receiving", pro: false },
+          { name: "History", path: "/admin/order-history", pro: false },
+        ],
+      },
+      {
+        icon: ShippingIcon,
+        name: "Logistics",
+        subItems: [
+          { name: "Vehicles", path: "/admin/vehicles", pro: false },
+          { name: "Deliveries", path: "/admin/deliveries", pro: false },
+          { name: "History", path: "/admin/logistics-history", pro: false },
+        ],
       },
       {
         icon: UserCircleIcon,
@@ -256,57 +296,18 @@ const menuGroups = [
         path: "/profile",
       },
 
-      {
-        name: "Forms",
-        icon: ListIcon,
-        subItems: [
-          { name: "Form Elements", path: "/form-elements", pro: false },
-        ],
-      },
-      {
-        name: "Tables",
-        icon: TableIcon,
-        subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-      },
-      {
-        name: "Pages",
-        icon: PageIcon,
-        subItems: [
-          { name: "Black Page", path: "/blank", pro: false },
-          { name: "404 Page", path: "/error-404", pro: false },
-        ],
-      },
     ],
   },
   {
     title: "Others",
     items: [
       {
-        icon: PieChartIcon,
-        name: "Charts",
-        subItems: [
-          { name: "Line Chart", path: "/line-chart", pro: false },
-          { name: "Bar Chart", path: "/bar-chart", pro: false },
-        ],
-      },
-      {
-        icon: BoxCubeIcon,
-        name: "Ui Elements",
-        subItems: [
-          { name: "Alerts", path: "/alerts", pro: false },
-          { name: "Avatars", path: "/avatars", pro: false },
-          { name: "Badge", path: "/badge", pro: false },
-          { name: "Buttons", path: "/buttons", pro: false },
-          { name: "Images", path: "/images", pro: false },
-          { name: "Videos", path: "/videos", pro: false },
-        ],
-      },
-      {
         icon: PlugInIcon,
         name: "Authentication",
         subItems: [
           { name: "Signin", path: "/signin", pro: false },
           { name: "Signup", path: "/signup", pro: false },
+          { name: "Reset Password", path: "/reset-password", pro: false },
         ],
       },
       // ... Add other menu items here

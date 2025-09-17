@@ -45,11 +45,19 @@ import LayoutDashboardIcon from "./LayoutDashboardIcon.vue";
 import UserGroupIcon from "./UserGroupIcon.vue";
 import BellIcon from "./BellIcon.vue";
 import BarChartIcon from "./BarChartIcon.vue";
+import EcommerceIcon from "./EcommerceIcon.vue";
+import ShippingIcon from "./ShippingIcon.vue";
+import WarehouseIcon from "./WarehouseIcon.vue";
+import OrderIcon from "./OrderIcon.vue";
 
 export {
   BellIcon,
   BarChartIcon,
   LayoutDashboardIcon,
+  EcommerceIcon,
+  ShippingIcon,
+  WarehouseIcon,
+  OrderIcon,
   UserGroupIcon,
   FolderIcon,
   TrashIconLg,

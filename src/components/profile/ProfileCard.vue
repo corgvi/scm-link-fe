@@ -237,16 +237,15 @@
                   </div>
 
                   <div class="col-span-2 lg:col-span-1">
-                    <label
-                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                    >
+                    <label class="mb-1.5 block text-sm font-medium text-gray-300 dark:text-white/15">
                       Username
                     </label>
                     <input
                       type="text"
+                      :placeholder="username || 'Username'"
                       disabled
                       v-model="username"
-                      class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                      class="shadow-theme-xs focus:border-brand-300 focus:shadow-focus-ring dark:focus:border-brand-300 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-500 dark:text-white/40 placeholder:text-gray-400 focus:outline-hidden disabled:border-gray-100 disabled:text-gray-500 disabled:placeholder:text-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:placeholder:text-white/40 dark:disabled:border-gray-800 dark:disabled:text-white/40 dark:disabled:placeholder:text-white/40"
                     />
                   </div>
 
@@ -290,16 +289,15 @@
                   </div>
 
                   <div class="col-span-2 lg:col-span-1">
-                    <label
-                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                    >
+                    <label class="mb-1.5 block text-sm font-medium text-gray-300 dark:text-white/15">
                       Active
                     </label>
                     <input
                       type="text"
+                      :placeholder="isActive ? 'Active' : 'Inactive'"
                       disabled
                       v-model="isActive"
-                      class="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                      class="shadow-theme-xs focus:border-brand-300 focus:shadow-focus-ring dark:focus:border-brand-300 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-500 dark:text-white/40 placeholder:text-gray-400 focus:outline-hidden disabled:border-gray-100 disabled:text-gray-500 disabled:placeholder:text-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:placeholder:text-white/40 dark:disabled:border-gray-800 dark:disabled:text-white/40 dark:disabled:placeholder:text-white/40"
                     />
                   </div>
 
@@ -311,12 +309,7 @@
                     </label>
                     <div class="flex flex-wrap gap-2">
                       <label v-for="role in allRoles" :key="role" class="flex items-center gap-1">
-                        <input
-                          type="checkbox"
-                          :value="role"
-                          v-model="roles"
-                          :disabled="!isAdmin"
-                        />
+                        <input type="checkbox" :value="role" v-model="roles" :disabled="!isAdmin" />
                         <span>{{ role }}</span>
                       </label>
                     </div>
@@ -453,17 +446,44 @@ const saveProfile = async () => {
     })
     const data = await response.json()
     if (data.code === 1000) {
-      alert.value = { type: 'success', message: 'Profile updated successfully.' }
-      setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
+      alert.value = {
+        show: true,
+        type: 'success',
+        title: 'Success',
+        message: 'Profile updated successfully.',
+      }
+      setTimeout(() => {
+        alert.value.show = false
+        alert.value.title = ''
+        alert.value.message = ''
+      }, 3000)
       localStorage.setItem('user_info', JSON.stringify(data.result))
       isProfileInfoModal.value = false
     } else {
-      alert.value = { type: 'error', message: data.message || 'Update failed.' }
-      setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
+      alert.value = {
+        show: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Update failed.',
+      }
     }
+    setTimeout(() => {
+      alert.value.show = false
+      alert.value.title = ''
+      alert.value.message = ''
+    }, 3000)
   } catch (error) {
-    alert.value = { type: 'error', message: 'Update error.' }
-    setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
+    alert.value = {
+      show: true,
+      type: 'error',
+      title: 'Error',
+      message: 'Update error.',
+    }
+    setTimeout(() => {
+      alert.value.show = false
+      alert.value.title = ''
+      alert.value.message = ''
+    }, 3000)
     console.error(error)
   }
 }

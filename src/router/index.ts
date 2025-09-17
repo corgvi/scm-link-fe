@@ -113,7 +113,79 @@ const router = createRouter({
       meta: {
         title: 'Blank',
       },
-    },  
+    },
+    {
+      path: '/admin/users',
+      name: 'AdminUsers',
+      component: () => import('../views/Admin/Users.vue'),
+      meta: {
+        title: 'User Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/create-user',
+      name: 'CreateUser',
+      component: () => import('../views/Admin/CreateUser.vue'),
+      meta: {
+        title: 'Create User',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/edit-user/:userId',
+      name: 'EditUser',
+      component: () => import('../views/Admin/EditUser.vue'),
+      meta: {
+        title: 'Edit User',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/products',
+      name: 'AdminProducts',
+      component: () => import('../views/Admin/Product/Products.vue'),
+      meta: {
+        title: 'Product Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/create-product',
+      name: 'CreateProduct',
+      component: () => import('../views/Admin/Product/CreateProduct.vue'),
+      meta: {
+        title: 'Create Product',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/edit-product/:productId',
+      name: 'EditProduct',
+      component: () => import('../views/Admin/Product/EditProduct.vue'),
+      meta: {
+        title: 'Edit Product',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/suppliers',
+      name: 'AdminSuppliers',
+      component: () => import('../views/Admin/Product/Suppliers.vue'),
+      meta: {
+        title: 'Supplier Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/categories',
+      name: 'AdminCategories',
+      component: () => import('../views/Admin/Product/Categories.vue'),
+      meta: {
+        title: 'Category Management',
+        requiresAdmin: true,
+      },
+    },
     {
       path: '/error-403',
       name: '403 Error',
