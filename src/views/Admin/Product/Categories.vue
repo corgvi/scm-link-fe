@@ -8,12 +8,14 @@
       :message="alert.message"
       :duration="3000"
     />
+    <PageBreadcrumb pageTitle="Category Management" />
 
+    <!-- Overview Section -->
     <div
       class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
     >
       <div class="mb-6 flex items-center justify-between">
-        <h2 class="font-semibold text-gray-800 dark:text-white/90">Category Management</h2>
+        <h2 class="font-semibold text-gray-800 dark:text-white/90">Overview</h2>
         <button
           @click="showCreateModal = true"
           class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white transition"
@@ -30,77 +32,159 @@
           Create Category
         </button>
       </div>
-      <div class="flex gap-3.5 mb-4">
-        <div class="relative">
-          <span class="absolute top-1/2 left-4 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-            <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M3.04199 9.37363C3.04199 5.87693 5.87735 3.04199 9.37533 3.04199C12.8733 3.04199 15.7087 5.87693 15.7087 9.37363C15.7087 12.8703 12.8733 15.7053 9.37533 15.7053C5.87735 15.7053 3.04199 12.8703 3.04199 9.37363ZM9.37533 1.54199C5.04926 1.54199 1.54199 5.04817 1.54199 9.37363C1.54199 13.6991 5.04926 17.2053 9.37533 17.2053C11.2676 17.2053 13.0032 16.5344 14.3572 15.4176L17.1773 18.238C17.4702 18.5309 17.945 18.5309 18.2379 18.238C18.5308 17.9451 18.5309 17.4703 18.238 17.1773L15.4182 14.3573C16.5367 13.0033 17.2087 11.2669 17.2087 9.37363C17.2087 5.04817 13.7014 1.54199 9.37533 1.54199Z"
-                fill=""
-              ></path>
-            </svg>
-          </span>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search categories..."
-            class="h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pr-4 pl-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden xl:w-[300px] dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 transition duration-150"
-          />
+      <div
+        class="grid grid-cols-1 rounded-xl border border-gray-200 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0 dark:divide-gray-800 dark:border-gray-800"
+      >
+        <div class="border-b p-5 sm:border-r lg:border-b-0">
+          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">Total Categories</p>
+          <h3 class="text-3xl text-gray-800 dark:text-white/90">{{ categories.length }}</h3>
+        </div>
+        <div class="border-b p-5 lg:border-b-0">
+          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">Total Products</p>
+          <h3 class="text-3xl text-gray-800 dark:text-white/90">{{ totalProducts }}</h3>
+        </div>
+        <div class="border-b p-5 sm:border-r sm:border-b-0">
+          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">Suppliers</p>
+          <h3 class="text-3xl text-gray-800 dark:text-white/90">{{ totalSuppliers }}</h3>
+        </div>
+        <div class="p-5">
+          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">Brands</p>
+          <h3 class="text-3xl text-gray-800 dark:text-white/90">{{ totalBrands }}</h3>
         </div>
       </div>
-      <div class="custom-scrollbar overflow-x-auto">
-        <table class="w-full table-auto">
-          <thead>
-            <tr class="border-b border-gray-200 dark:border-gray-800">
-              <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
-                Name
-              </th>
-              <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
-                Code
-              </th>
-              <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
-                Description
-              </th>
-              <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="category in paginatedCategories"
-              :key="category.id"
-              class="transition hover:bg-gray-50 dark:hover:bg-gray-900"
+    </div>
+
+    <!-- Categories Table -->
+    <div
+      class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-white/[0.03]"
+    >
+      <div
+        class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800"
+      >
+        <div>
+          <h2 class="font-semibold text-gray-800 dark:text-white/90">Category Management</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Manage your product categories here. You can create, edit, or delete categories as
+            needed.
+          </p>
+        </div>
+        <div class="flex gap-3.5">
+          <!-- Search -->
+          <div class="relative">
+            <span class="absolute top-1/2 left-4 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M3.04199 9.37363C3.04199 5.87693 5.87735 3.04199 9.37533 3.04199C12.8733 3.04199 15.7087 5.87693 15.7087 9.37363C15.7087 12.8703 12.8733 15.7053 9.37533 15.7053C5.87735 15.7053 3.04199 12.8703 3.04199 9.37363ZM9.37533 1.54199C5.04926 1.54199 1.54199 5.04817 1.54199 9.37363C1.54199 13.6991 5.04926 17.2053 9.37533 17.2053C11.2676 17.2053 13.0032 16.5344 14.3572 15.4176L17.1773 18.238C17.4702 18.5309 17.945 18.5309 18.2379 18.238C18.5308 17.9451 18.5309 17.4703 18.238 17.1773L15.4182 14.3573C16.5367 13.0033 17.2087 11.2669 17.2087 9.37363C17.2087 5.04817 13.7014 1.54199 9.37533 1.54199Z"
+                  fill=""
+                />
+              </svg>
+            </span>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search categories..."
+              class="dark:bg-dark-900 shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pr-4 pl-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden xl:w-[300px] dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+              aria-label="Search categories"
+            />
+          </div>
+
+          <!-- Export -->
+          <button
+            class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-[11px] text-sm font-medium text-gray-700 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 transition duration-150"
+            @click="exportCSV"
+            aria-label="Export categories to CSV"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
             >
-              <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                {{ category.name }}
-              </td>
-              <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                {{ category.code }}
-              </td>
-              <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                {{ category.description }}
-              </td>
-              <td class="p-4 flex gap-2">
-                <button
-                  @click="openEditModal(category)"
-                  class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                >
-                  <img src="/images/icons/edit.svg" alt="Edit" class="w-4 h-4" />
-                  Edit
-                </button>
-                <button
-                  @click="confirmDeleteCategory(category)"
-                  class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
-                >
-                  <img src="/images/icons/delete.svg" alt="Delete" class="w-4 h-4" />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              <path
+                d="M16.6671 13.3333V15.4166C16.6671 16.1069 16.1074 16.6666 15.4171 16.6666H4.58301C3.89265 16.6666 3.33301 16.1069 3.33301 15.4166V13.3333M10.0013 3.33325L10.0013 13.3333M6.14553 7.18708L9.99958 3.33549L13.8539 7.18708"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Export
+          </button>
+        </div>
+      </div>
+      <!-- Loading/Error/Empty State -->
+      <div v-if="loading" class="p-8 text-center text-gray-400">
+        <span
+          class="animate-spin mr-2 w-6 h-6 border-2 border-t-transparent border-gray-400 rounded-full inline-block"
+        ></span>
+        Loading categories...
+      </div>
+      <div v-else-if="error" class="p-8 text-center text-red-500">
+        {{ error }}
+      </div>
+      <div v-else>
+        <!-- Table -->
+        <div class="custom-scrollbar overflow-x-auto">
+          <table class="w-full table-auto">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                <th class="p-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-400">
+                  #
+                </th>
+                <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
+                  Name
+                </th>
+                <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
+                  Code
+                </th>
+                <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
+                  Description
+                </th>
+                <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(category, idx) in paginatedCategories"
+                :key="category.id"
+                class="transition hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ (currentPage - 1) * itemsPerPage + idx + 1 }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ category.name }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ category.code }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ category.description }}
+                </td>
+                <td class="p-4 flex gap-2">
+                  <button
+                    @click="openEditModal(category)"
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  >
+                    <img src="/images/icons/edit.svg" alt="Edit" class="w-4 h-4" />
+                    Edit
+                  </button>
+                  <button
+                    @click="confirmDeleteCategory(category)"
+                    class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+                  >
+                    <img src="/images/icons/delete.svg" alt="Delete" class="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       <div
         class="flex flex-col items-center justify-between border-t border-gray-200 px-5 py-4 sm:flex-row dark:border-gray-800"
@@ -205,9 +289,7 @@
           >
             ✕
           </button>
-          <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-            Create Category
-          </h3>
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Create Category</h3>
           <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
             Fill in the details below to create a new category.
           </p>
@@ -219,7 +301,6 @@
                 placeholder="Name"
                 class="border rounded-lg px-4 py-3 w-full dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 transition"
                 :class="{ 'border-red-500': errors.name }"
-            
               />
               <span v-if="errors.name" class="text-xs text-red-500 mt-1">{{ errors.name }}</span>
             </div>
@@ -230,7 +311,6 @@
                 placeholder="Code"
                 class="border rounded-lg px-4 py-3 w-full dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 transition"
                 :class="{ 'border-red-500': errors.code }"
-                
               />
               <span v-if="errors.code" class="text-xs text-red-500 mt-1">{{ errors.code }}</span>
             </div>
@@ -284,9 +364,7 @@
       @close="showEditModal = false"
     >
       <template #body>
-        <div
-          class=""
-        >
+        <div class="">
           <button
             @click="showEditModal = false"
             class="transition-color absolute right-5 top-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300"
@@ -307,9 +385,7 @@
               />
             </svg>
           </button>
-          <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-            Edit Category
-          </h3>
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Edit Category</h3>
           <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
             Update the details of the category below.
           </p>
@@ -388,9 +464,7 @@
       @close="showDeleteModal = false"
     >
       <template #body>
-        <div
-          class=""
-        >
+        <div class="">
           <button
             @click="showDeleteModal = false"
             class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white text-2xl font-bold focus:outline-none"
@@ -449,10 +523,13 @@ interface Category {
 
 const baseURL = import.meta.env.VITE_BASE_URL
 const categories = ref<Category[]>([])
+const products = ref<any[]>([])
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const token = localStorage.getItem('auth_token') || ''
+const loading = ref(true)
+const error = ref('')
 
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
@@ -495,6 +572,8 @@ const editErrors = ref({
 const categoryToDelete = ref<Category | null>(null)
 
 async function fetchCategories() {
+  loading.value = true
+  error.value = ''
   try {
     const res = await fetch(`${baseURL}/scmlink/categories`, {
       headers: {
@@ -504,19 +583,38 @@ async function fetchCategories() {
     const data = await res.json()
     if (data.code === 1000) {
       categories.value = data.result
+    } else {
+      error.value = data.message || 'Failed to load categories.'
     }
   } catch (e) {
-    alert.show = true
-    alert.type = 'error'
-    alert.title = 'Error'
-    alert.message = 'Failed to fetch categories.'
-    setTimeout(() => {
-      alert.show = false
-    }, 3000)
+    error.value = 'Network error. Please try again.'
+  } finally {
+    loading.value = false
   }
 }
 
-onMounted(fetchCategories)
+async function fetchProducts() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/products`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) {
+      products.value = data.result
+    }
+  } catch (e) {
+    // handle error if needed
+  }
+}
+
+onMounted(() => {
+  fetchCategories()
+  fetchProducts()
+})
+
+const totalProducts = computed(() => products.value.length)
+const totalSuppliers = computed(() => new Set(products.value.map((p) => p.supplier?.name)).size)
+const totalBrands = computed(() => new Set(products.value.map((p) => p.branchName)).size)
 
 const filteredCategories = computed(() => {
   let list = categories.value
@@ -649,7 +747,7 @@ async function handleUpdateCategory() {
       // update local list
       const idx = categories.value.findIndex((c) => c.id === editForm.value.id)
       if (idx !== -1) categories.value[idx] = { ...editForm.value }
-      
+
       alert.show = true
       alert.type = 'success'
       alert.title = 'Success'
@@ -731,5 +829,27 @@ async function handleDeleteCategory() {
     categoryToDelete.value = null
     fetchCategories()
   }
+}
+
+// Export CSV for categories
+function exportCSV() {
+  const rows = [
+    ['Name', 'Code', 'Description'],
+    ...filteredCategories.value.map((c) => [
+      c.name,
+      c.code,
+      c.description || '',
+    ]),
+  ]
+  const csvContent = rows
+    .map((e) => e.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.setAttribute('download', 'categories.csv')
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>

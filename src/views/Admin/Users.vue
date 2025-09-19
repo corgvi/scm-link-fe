@@ -88,6 +88,17 @@
           </div>
         </div>
       </div>
+      <!-- Loading/Error/Empty State -->
+      <div v-if="loading" class="p-8 text-center text-gray-400">
+        <span
+          class="animate-spin mr-2 w-6 h-6 border-2 border-t-transparent border-gray-400 rounded-full inline-block"
+        ></span>
+        Loading categories...
+      </div>
+      <div v-else-if="error" class="p-8 text-center text-red-500">
+        {{ error }}
+      </div>
+      <div v-else>
       <div class="custom-scrollbar overflow-x-auto">
         <table class="w-full table-auto">
           <thead>
@@ -165,6 +176,7 @@
           </tbody>
         </table>
       </div>
+      </div>
       <div class="flex flex-col items-center justify-between border-t border-gray-200 px-5 py-4 sm:flex-row dark:border-gray-800">
         <div class="pb-3 sm:pb-0">
           <span class="block text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -239,8 +251,12 @@ const itemsPerPage = ref(10)
 const searchQuery = ref('')
 const selected = ref<string[]>([])
 const isAllSelected = computed(() => paginatedUsers.value.length > 0 && paginatedUsers.value.every(u => selected.value.includes(u.id)))
+const error = ref('')
+const loading = ref(false)
 
 async function fetchUsers() {
+  loading.value = true
+  error.value = ''
   try {
     const res = await fetch(`${baseURL}/scmlink/users`, {
       headers: {
@@ -253,7 +269,11 @@ async function fetchUsers() {
     }
   } catch (e) {
     // handle error
-  }
+    console.error(e)
+    error.value = 'Network error. Please try again.'
+  } finally {
+    loading.value = false
+  } 
 }
 
 onMounted(fetchUsers)

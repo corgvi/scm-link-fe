@@ -187,6 +187,24 @@ const router = createRouter({
       },
     },
     {
+      path: '/admin/warehouses',
+      name: 'AdminWarehouses',
+      component: () => import('../views/Admin/Inventory/Warehouses.vue'),
+      meta: {
+        title: 'Warehouse Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/inventories',
+      name: 'AdminInventories',
+      component: () => import('../views/Admin/Inventory/Inventories.vue'),
+      meta: {
+        title: 'Warehouse Management',
+        requiresAdmin: true,
+      },
+    },
+    {
       path: '/error-403',
       name: '403 Error',
       component: () => import('../views/Errors/FourZeroThree.vue'),
