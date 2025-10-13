@@ -196,11 +196,38 @@ const router = createRouter({
       },
     },
     {
+      path: '/admin/orders',
+      name: 'AdminOrders',
+      component: () => import('../views/Admin/Order/Orders.vue'),
+      meta: {
+        title: 'Order Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/order-detail/:orderId',
+      name: 'AdminOrderDetail',
+      component: () => import('../views/Admin/Order/OrderDetail.vue'),
+      meta: {
+        title: 'Order Detail',
+        requiresAdmin: true,
+      },
+    },
+    {
       path: '/admin/inventories',
       name: 'AdminInventories',
       component: () => import('../views/Admin/Inventory/Inventories.vue'),
       meta: {
         title: 'Warehouse Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/transactions',
+      name: 'AdminTransactions',
+      component: () => import('../views/Admin/Inventory/Transactions.vue'),
+      meta: {
+        title: 'Transaction Management',
         requiresAdmin: true,
       },
     },

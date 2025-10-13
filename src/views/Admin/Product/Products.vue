@@ -8,15 +8,11 @@
     >
       <div class="mb-6 flex items-center justify-between">
         <h2 class="font-semibold text-gray-800 dark:text-white/90">Overview</h2>
-        <button
-          @click="$router.push('/admin/create-product')"
-          class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white transition"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none">
-            <path d="M5 10h10M10 5v10" stroke="white" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
-          Create Product
-        </button>
+        <ActionMainButton
+          text="Create Product"
+          icon="plus"
+          type="create"
+          @click="$router.push('/admin/create-product')" />
       </div>
       <div
         class="grid grid-cols-1 rounded-xl border border-gray-200 sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-y-0 dark:divide-gray-800 dark:border-gray-800"
@@ -205,14 +201,11 @@
                   {{ product.size }}
                 </td>
                 <td class="p-4 flex justify-center gap-2">
-                  <button
-                    @click.stop="$router.push(`/admin/edit-product/${product.id}`)"
-                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-blue-700 transition"
-                    aria-label="Edit product"
-                  >
-                    <img src="/images/icons/edit.svg" class="w-4 h-4" alt="edit" />
-                    Edit
-                  </button>
+                  <ActionMainButton
+                    text="Update"
+                    icon="edit"
+                    type="update"
+                    @click.stop="$router.push(`/admin/edit-product/${product.id}`)" />
                 </td>
               </tr>
               <tr v-if="!loading && paginatedProducts.length === 0">
@@ -334,6 +327,7 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import ActionMainButton from '@/components/common/ActionMainButton.vue'
 
 interface Category {
   id: string

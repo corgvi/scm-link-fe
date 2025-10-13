@@ -277,7 +277,6 @@ const menuGroups = [
         subItems: [
           { name: "Order List", path: "/admin/orders", pro: false },
           { name: "Create order", path: "/admin/create-order", pro: false },
-          { name: "Receiving", path: "/admin/receiving", pro: false },
           { name: "History", path: "/admin/order-history", pro: false },
         ],
       },

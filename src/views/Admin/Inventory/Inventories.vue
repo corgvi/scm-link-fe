@@ -1,44 +1,67 @@
 <template>
   <AdminLayout>
+    <!-- Alert -->
+    <Alert
+      v-if="alert.show"
+      :variant="alert.type"
+      :title="alert.title"
+      :message="alert.message"
+      :duration="3000"
+    />
     <PageBreadcrumb pageTitle="Inventory Management" />
 
     <!-- Overview -->
     <div
-      class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+      class="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
     >
       <div class="mb-6 flex items-center justify-between">
-        <h2 class="font-semibold text-gray-800 dark:text-white/90">Overview</h2>
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Overview</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            Quick insights into your inventory
+          </p>
+        </div>
+        <div class="flex justify-end mt-6">
+          <ActionMainButton
+            text="Receive Inventory"
+            icon="plus"
+            type="create"
+            @click="openGlobalReceiveModal"
+          />
+        </div>
       </div>
-      <div
-        class="grid grid-cols-1 rounded-xl border border-gray-200 sm:grid-cols-2 lg:grid-cols-4 dark:divide-gray-800 dark:border-gray-800"
-      >
-        <div class="border-b p-5 sm:border-r lg:border-b-0">
-          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">
-            Total Products
-          </p>
-          <h3 class="text-3xl text-gray-800 dark:text-white/90">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div
+          class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+        >
+          <p class="text-gray-500 dark:text-gray-400">Total Products</p>
+          <p class="text-2xl font-semibold text-gray-800 dark:text-white">
             {{ inventorySummary.length }}
-          </h3>
-        </div>
-        <div class="border-b p-5 lg:border-b-0">
-          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">
-            Total Quantity
           </p>
-          <h3 class="text-3xl text-gray-800 dark:text-white/90">
+        </div>
+        <div
+          class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+        >
+          <p class="text-gray-500 dark:text-gray-400">Total Quantity</p>
+          <p class="text-2xl font-semibold text-green-600">
             {{ inventorySummary.reduce((sum, i) => sum + (i.totalQuantity || 0), 0) }}
-          </h3>
+          </p>
         </div>
-        <div class="border-b p-5 sm:border-r sm:border-b-0">
-          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">Total Value</p>
-          <h3 class="text-3xl text-gray-800 dark:text-white/90">
+        <div
+          class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+        >
+          <p class="text-gray-500 dark:text-gray-400">Total Value</p>
+          <p class="text-2xl font-semibold text-yellow-600">
             {{ formatCurrency(inventorySummary.reduce((sum, i) => sum + (i.totalValue || 0), 0)) }}
-          </h3>
+          </p>
         </div>
-        <div class="p-5">
-          <p class="mb-1.5 text-sm text-gray-400 dark:text-gray-500">Warehouses</p>
-          <h3 class="text-3xl text-gray-800 dark:text-white/90">
+        <div
+          class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+        >
+          <p class="text-gray-500 dark:text-gray-400">Warehouses</p>
+          <p class="text-2xl font-semibold text-indigo-600">
             {{ new Set(inventorySummary.map((i) => i.warehouseName)).size }}
-          </h3>
+          </p>
         </div>
       </div>
     </div>
@@ -57,16 +80,8 @@
         <div class="flex gap-3.5">
           <!-- Search -->
           <div class="relative">
-            <span
-              class="absolute top-1/2 left-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
-            >
-              <svg
-                class="fill-current"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-              >
+            <span class="absolute top-1/2 left-4 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   fill-rule="evenodd"
                   clip-rule="evenodd"
@@ -83,6 +98,28 @@
               aria-label="Search inventory"
             />
           </div>
+          <button
+            class="shadow-theme-xs flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-[11px] text-sm font-medium text-gray-700 sm:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 transition duration-150"
+            @click="exportCSV"
+            aria-label="Export products to CSV"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <path
+                d="M16.6671 13.3333V15.4166C16.6671 16.1069 16.1074 16.6666 15.4171 16.6666H4.58301C3.89265 16.6666 3.33301 16.1069 3.33301 15.4166V13.3333M10.0013 3.33325L10.0013 13.3333M6.14553 7.18708L9.99958 3.33549L13.8539 7.18708"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+            Export
+          </button>
         </div>
       </div>
 
@@ -93,7 +130,9 @@
           <thead>
             <tr class="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
               <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">#</th>
-              <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">SKU</th>
+              <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
+                SKU
+              </th>
               <th class="p-4 text-left text-xs font-medium text-gray-700 dark:text-gray-400">
                 Product
               </th>
@@ -114,16 +153,30 @@
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
             <template v-for="(item, idx) in paginatedInventory" :key="item.productId">
-              <tr class="transition hover:bg-gray-50 dark:hover:bg-gray-900">
-                <td class="p-4">{{ (currentPage - 1) * itemsPerPage + idx + 1 }}</td>
-                <td class="p-4">{{ item.sku }}</td>
-                <td class="p-4">{{ item.productName }}</td>
-                <td class="p-4">{{ item.warehouseName }}</td>
-                <td class="p-4">{{ item.totalQuantity }}</td>
-                <td class="p-4">{{ formatCurrency(item.totalValue) }}</td>
-                <td class="p-4">
+              <tr
+                class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ (currentPage - 1) * itemsPerPage + idx + 1 }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ item.sku }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ item.productName }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ item.warehouseName }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ item.totalQuantity }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
+                  {{ formatCurrency(item.totalValue) }}
+                </td>
+                <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
                   <span
                     :class="item.status === 'IN_STOCK' ? 'text-green-600' : 'text-red-500'"
                     class="font-medium"
@@ -132,18 +185,47 @@
                   </span>
                 </td>
                 <td class="p-4 text-center">
-                  <button
-                    @click="toggleExpand(item.productId)"
-                    class="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-300 transition"
-                  >
-                    Details
-                  </button>
+                  <div class="flex justify-center gap-2">
+                    <button
+                      @click="toggleExpand(item.productId)"
+                      class="inline-flex items-center gap-2 rounded-lg border border-brand-600 bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-100 hover:border-brand-700 hover:text-brand-700 transition duration-150 shadow"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-5 h-5 transition-transform duration-300"
+                        :style="{
+                          transform:
+                            expandedId === item.productId ? 'rotate(180deg)' : 'rotate(0deg)',
+                        }"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                      <span class="font-semibold">Details</span>
+                    </button>
+                    <ActionMainButton
+                      text="Receive"
+                      icon="plus"
+                      type="receive"
+                      @click="openReceiveModal(item)"
+                    />
+                  </div>
                 </td>
               </tr>
               <!-- Expand batches -->
               <tr v-if="expandedId === item.productId">
                 <td colspan="8" class="p-4 bg-gray-50 dark:bg-gray-800">
-                  <div v-if="batchDetails[item.productId] && batchDetails[item.productId].length" class="space-y-2">
+                  <div
+                    v-if="batchDetails[item.productId] && batchDetails[item.productId].length"
+                    class="space-y-2 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
+                  >
                     <h4 class="font-semibold text-gray-700 dark:text-gray-200">Batch Details</h4>
                     <table class="w-full text-sm border border-gray-200 dark:border-gray-700">
                       <thead>
@@ -164,13 +246,20 @@
                           <td class="p-2">{{ formatDate(batch.expiryDate) }}</td>
                           <td class="p-2">{{ batch.quantity }}</td>
                           <td class="p-2">{{ formatCurrency(batch.costPrice) }}</td>
-                          <td class="p-2">{{ formatCurrency(batch.sellPrice ?? batch.costPrice * 1.2) }}</td>
+                          <td class="p-2">
+                            {{ formatCurrency(batch.sellPrice) }}
+                          </td>
                           <td class="p-2">{{ formatCurrency(batch.totalCost) }}</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                  <div v-else-if="batchDetails[item.productId] && batchDetails[item.productId].length === 0" class="text-gray-500">
+                  <div
+                    v-else-if="
+                      batchDetails[item.productId] && batchDetails[item.productId].length === 0
+                    "
+                    class="text-gray-500"
+                  >
                     No batch details found.
                   </div>
                   <div v-else class="text-gray-500">Loading batch details...</div>
@@ -181,13 +270,34 @@
         </table>
       </div>
     </div>
+    <!-- Modals -->
+    <GlobalReceiveModal
+      v-if="showGlobalReceiveModal"
+      @close="showGlobalReceiveModal = false"
+      @submitted="handleGlobalSubmit"
+      :warehouses="warehouses"
+      :suppliers="suppliers"
+      :products="products"
+    />
+    <ProductReceiveModal
+      v-if="showProductReceiveModal"
+      :product="selectedProduct"
+      @close="showProductReceiveModal = false"
+      @submitted="handleProductSubmit"
+      :warehouses="warehouses"
+      :suppliers="suppliers"
+      :products="products"
+    />
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import GlobalReceiveModal from './GlobalReceiveModal.vue'
+import ProductReceiveModal from './ProductReceiveModal.vue'
+import ActionMainButton from '@/components/common/ActionMainButton.vue'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
@@ -197,10 +307,32 @@ const loading = ref(true)
 const error = ref('')
 const expandedId = ref<string | null>(null)
 const batchDetails = ref<Record<string, any[]>>({})
+const warehouses = ref<any[]>([])
+const suppliers = ref<any[]>([])
+const products = ref<any[]>([])
+const warehouseLocations = ref<any[]>([])
 
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
+const alert = reactive({
+  show: false,
+  type: 'success',
+  title: '',
+  message: '',
+})
+// Modals
+const showGlobalReceiveModal = ref(false)
+const showProductReceiveModal = ref(false)
+const selectedProduct = ref<any>(null)
+
+function openGlobalReceiveModal() {
+  showGlobalReceiveModal.value = true
+}
+function openReceiveModal(product: any) {
+  selectedProduct.value = product
+  showProductReceiveModal.value = true
+}
 
 // Fetch summary
 async function fetchInventory() {
@@ -215,13 +347,67 @@ async function fetchInventory() {
     } else {
       error.value = data.message || 'Failed to fetch inventory'
     }
-  } catch {
+  } catch (e) {
     error.value = 'Network error. Please try again.'
+    console.error(e)
   } finally {
     loading.value = false
   }
 }
-onMounted(fetchInventory)
+async function fetchWarehouses() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/warehouses`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) warehouses.value = data.result
+    console.log(warehouses.value)
+  } catch (e) {
+    console.error(e)
+  }
+}
+async function fetchSuppliers() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/suppliers`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) suppliers.value = data.result
+  } catch (e) {
+    console.error(e)
+  }
+}
+async function fetchProducts() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/products`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) products.value = data.result
+  } catch (e) {
+    console.error(e)
+  }
+}
+async function fetchWarehouseLocations() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/warehouseLocations`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) warehouseLocations.value = data.result
+  } catch (e) {
+    console.error(e)
+  }
+}
+onMounted(async () => {
+  await Promise.all([
+    fetchWarehouseLocations(),
+    fetchInventory(),
+    fetchWarehouses(),
+    fetchSuppliers(),
+    fetchProducts(),
+  ])
+})
 
 // Fetch batch details
 async function fetchBatchDetails(productId: string) {
@@ -252,6 +438,16 @@ function toggleExpand(productId: string) {
   }
 }
 
+// Submit handlers
+function handleGlobalSubmit() {
+  fetchInventory()
+  showGlobalReceiveModal.value = false
+}
+function handleProductSubmit() {
+  fetchInventory()
+  showProductReceiveModal.value = false
+}
+
 // Filtering & pagination
 const filteredInventory = computed(() => {
   let list = inventorySummary.value
@@ -267,7 +463,9 @@ const filteredInventory = computed(() => {
   }
   return list
 })
-const totalPages = computed(() => Math.ceil(filteredInventory.value.length / itemsPerPage.value) || 1)
+const totalPages = computed(
+  () => Math.ceil(filteredInventory.value.length / itemsPerPage.value) || 1,
+)
 const paginatedInventory = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   return filteredInventory.value.slice(start, start + itemsPerPage.value)
@@ -279,5 +477,77 @@ function formatCurrency(value: number) {
 }
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('vi-VN')
+}
+
+function exportCSV() {
+  const rows = [
+    [
+      'SKU',
+      'Product',
+      'Warehouse',
+      'Quantity',
+      'Value',
+      'Status',
+      'Batch Number',
+      'Batch Created',
+      'Batch Expiry',
+      'Batch Quantity',
+      'Batch Cost Price',
+      'Batch Sell Price',
+      'Batch Total Cost',
+    ],
+  ]
+
+  // For each inventory, include batch details if available
+  filteredInventory.value.forEach((item) => {
+    const batches = batchDetails.value[item.productId] || []
+    if (batches.length) {
+      batches.forEach((batch) => {
+        rows.push([
+          item.sku,
+          item.productName,
+          item.warehouseName,
+          item.totalQuantity,
+          item.totalValue,
+          item.status,
+          batch.batchNumber,
+          formatDate(batch.createdAt),
+          formatDate(batch.expiryDate),
+          batch.quantity,
+          batch.costPrice,
+          batch.sellPrice ?? batch.costPrice * 1.2,
+          batch.totalCost,
+        ])
+      })
+    } else {
+      // No batch details, just inventory row
+      rows.push([
+        item.sku,
+        item.productName,
+        item.warehouseName,
+        item.totalQuantity,
+        item.totalValue,
+        item.status,
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+      ])
+    }
+  })
+
+  const csvContent = rows
+    .map((e) => e.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.setAttribute('download', 'inventories.csv')
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>
