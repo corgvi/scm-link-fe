@@ -317,6 +317,12 @@ layer(base);
   display: flex;
 }
 
+.pagination-btn {
+  @apply shadow-theme-xs flex items-center gap-2 rounded-lg border border-gray-300
+    bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed
+    dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.04];
+}
+
 .tableCheckbox:checked ~ span span {
   @apply opacity-100;
 }

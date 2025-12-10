@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 flex items-center justify-center bg-black/50 z-99999">
     <div
-      class="no-scrollbar relative w-full max-w-[600px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8"
+      class="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8"
     >
       <!-- Close -->
       <button
@@ -15,17 +15,17 @@
         Receive Inventory: {{ product.productName }}
       </h3>
       <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-        Add new batch for {{ product.productName }}.
+        Add inventory for {{ product.productName }}.
       </p>
 
       <form @submit.prevent="submit">
         <!-- Warehouse Location -->
         <div class="mb-3">
           <label class="block text-sm mb-1">Warehouse Location</label>
-          <select v-model="form.warehouseLocationId" class="w-full border rounded p-2" required>
+          <select v-model="form.products[0].warehouseLocationId" class="w-full border rounded p-2" required>
             <option disabled value="">Select location</option>
             <option
-              v-for="loc in product.warehouse?.warehouseLocations || []"
+              v-for="loc in warehouseLocations"
               :key="loc.id"
               :value="loc.id"
             >
@@ -34,16 +34,10 @@
           </select>
         </div>
 
-        <!-- Batch Info -->
-        <div class="grid grid-cols-2 gap-4 mb-3">
-          <div>
-            <label class="block text-sm mb-1">Batch Number</label>
-            <input v-model="form.batchNumber" class="w-full border rounded p-2" required />
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Expiry Date</label>
-            <input v-model="form.expiryDate" type="date" class="w-full border rounded p-2" />
-          </div>
+        <!-- Expiry Date -->
+        <div class="mb-3">
+          <label class="block text-sm mb-1">Expiry Date</label>
+          <input v-model="form.products[0].expiryDate" type="date" class="w-full border rounded p-2" />
         </div>
 
         <!-- Quantity & Cost -->
@@ -51,7 +45,7 @@
           <div>
             <label class="block text-sm mb-1">Quantity</label>
             <input
-              v-model.number="form.quantity"
+              v-model.number="form.products[0].quantity"
               type="number"
               min="1"
               class="w-full border rounded p-2"
@@ -61,7 +55,7 @@
           <div>
             <label class="block text-sm mb-1">Cost Price</label>
             <input
-              v-model.number="form.costPrice"
+              v-model.number="form.products[0].costPrice"
               type="number"
               min="0"
               class="w-full border rounded p-2"
@@ -85,13 +79,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref, onMounted } from "vue"
 
 const props = defineProps<{
   product: any,
-  warehouses: any[],
-  suppliers: any[],
-
+  warehouseId: string
 }>()
 
 const emit = defineEmits(['close', 'submitted'])
@@ -99,36 +91,52 @@ const emit = defineEmits(['close', 'submitted'])
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem("auth_token") || ""
 
-// form
+// Đúng cấu trúc form như GlobalReceiveModal
 const form = ref({
-  productId: props.product.productId,
-  quantity: 0,
-  batchNumber: "",
-  costPrice: 0,
-  warehouseLocationId: "",
-  expiryDate: ""
+  warehouse_id: props.warehouseId || '',
+  totalItemsExpected: 0,
+  products: [
+    {
+      productId: props.product.productId || '',
+      quantity: null,
+      costPrice: null,
+      warehouseLocationId: '',
+      expiryDate: '',
+    },
+  ],
 })
 
-// format date yyyy-MM-dd -> yyyy/MM/dd
+const warehouseLocations = ref<any[]>([])
+
+async function fetchWarehouseLocations() {
+  if (!props.warehouseId) return
+  try {
+    const res = await fetch(`${baseURL}/scmlink/warehouses/${props.warehouseId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (data.code === 1000 && Array.isArray(data.result?.warehouseLocations)) {
+      warehouseLocations.value = data.result.warehouseLocations
+    } else {
+      warehouseLocations.value = []
+    }
+  } catch {
+    warehouseLocations.value = []
+  }
+}
+
 function formatDateForRequest(dateStr: string) {
   if (!dateStr) return null
   return dateStr.replace(/-/g, "/")
 }
 
 async function submit() {
-  const payload = {
-    warehouse_id: props.product.warehouseId,
-    supplier_id: props.product.supplierId || "", // có thể bổ sung supplier nếu cần
-    totalItemsExpected: form.value.quantity,
-    products: [
-      {
-        ...form.value,
-        expiryDate: form.value.expiryDate
-          ? formatDateForRequest(form.value.expiryDate)
-          : null
-      }
-    ]
-  }
+  // Tính lại tổng số lượng
+  form.value.totalItemsExpected = Number(form.value.products[0].quantity) || 0
+  // Format ngày
+  form.value.products[0].expiryDate = form.value.products[0].expiryDate
+    ? formatDateForRequest(form.value.products[0].expiryDate)
+    : null
 
   const res = await fetch(`${baseURL}/scmlink/receivingNotes`, {
     method: "POST",
@@ -136,7 +144,7 @@ async function submit() {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(form.value)
   })
 
   const data = await res.json()
@@ -146,4 +154,8 @@ async function submit() {
     alert(data.message || "Failed to receive inventory")
   }
 }
+
+onMounted(() => {
+  fetchWarehouseLocations()
+})
 </script>

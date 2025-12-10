@@ -286,6 +286,7 @@ import { useRouter } from 'vue-router'
 import CommonGridShape from '@/components/common/CommonGridShape.vue'
 import FullScreenLayout from '@/components/layout/FullScreenLayout.vue'
 import Alert from '@/components/ui/Alert.vue'
+import * as auth from '@/services/auth'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 const username = ref('')
@@ -301,45 +302,31 @@ const togglePasswordVisibility = () => {
 
 const handleSubmit = async () => {
   try {
-    const response = await fetch(`${baseURL}/scmlink/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value,
-      }),
-    })
-    const data = await response.json()
-    if (data.code === 1000 && data.result.authenticated) {
-      const token = data.result.token
-      localStorage.setItem('auth_token', token)
-      if (keepLoggedIn.value) {
-        localStorage.setItem('keep_logged_in', 'true')
-      }
-      // Fetch user info with token
-      const infoResponse = await fetch(`${baseURL}/scmlink/users/my-info`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+    const result = await auth.login(username.value, password.value)
+    // optionally persist keepLoggedIn flag
+    if (keepLoggedIn.value) localStorage.setItem('keep_logged_in', 'true')
+
+    // fetch user info with token using fetchWithAuth helper
+    try {
+      const infoRes = await fetch(`${baseURL}/scmlink/users/my-info`, {
+        headers: { Authorization: `Bearer ${auth.getToken()}`, 'Content-Type': 'application/json' },
       })
-      const infoData = await infoResponse.json()
-      if (infoData.code === 1000 && infoData.result) {
-        localStorage.setItem('user_info', JSON.stringify(infoData.result))
+      const infoData = await infoRes.json()
+      if (infoData?.code === 1000 && infoData.result) {
+        auth.setUserInfo(infoData.result)
       }
-      alert.value = { type: 'success', message: 'Login successful!' }
-      setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
-      router.push('/')
-    } else {
-      alert.value = { type: 'error', message: 'Login failed' }
-      setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
-      console.error(`Login failed: ${data.message}`)
+    } catch (e) {
+      console.warn('fetch user info failed', e)
     }
-  } catch (error) {
-    alert.value = { type: 'error', message: 'Login error' }
+
+    alert.value = { type: 'success', message: 'Login successful!' }
     setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
-    console.error(`error: ${error}`)
+    router.push('/')
+  } catch (err: any) {
+    console.error('Login error', err)
+    const msg = err?.message || err?.message || 'Login failed'
+    alert.value = { type: 'error', message: msg }
+    setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
   }
 }
 </script>

@@ -17,39 +17,31 @@
       </p>
 
       <form @submit.prevent="submit">
-        <!-- Warehouse & Supplier -->
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <!-- Warehouse -->
-          <select v-model="form.warehouse_id">
+        <!-- Warehouse -->
+        <div class="mb-4">
+          <label class="block text-sm mb-1">Warehouse</label>
+          <select v-model="form.warehouse_id" class="w-full border rounded p-2">
             <option disabled value="">Select warehouse</option>
             <option v-for="w in warehouses" :key="w.id" :value="w.id">
               {{ w.name }}
             </option>
           </select>
-
-          <!-- Supplier -->
-          <select v-model="form.supplier_id">
-            <option disabled value="">Select supplier</option>
-            <option v-for="s in suppliers" :key="s.id" :value="s.id">
-              {{ s.name }}
-            </option>
-          </select>
         </div>
 
-        <!-- Total Items -->
+        <!-- Total Items (auto sum, disabled) -->
         <div class="mb-4">
           <label class="block text-sm mb-1">Total Items Expected</label>
           <input
-            v-model.number="form.totalItemsExpected"
+            :value="totalItemsExpected"
             type="number"
-            class="w-full border rounded p-2"
-            required
+            class="w-full border rounded p-2 bg-gray-100 text-gray-500"
+            disabled
           />
         </div>
 
         <!-- Products -->
         <h3 class="font-medium mb-2">Products</h3>
-        <div v-for="(p, idx) in form.products" :key="idx" class="grid grid-cols-6 gap-2 mb-2">
+        <div v-for="(p, idx) in form.products" :key="idx" class="grid grid-cols-5 gap-2 mb-2">
           <select v-model="p.productId">
             <option disabled value="">Product</option>
             <option
@@ -61,8 +53,11 @@
               {{ prod.name }}
             </option>
           </select>
-          <input v-model="p.batchNumber" placeholder="Batch" class="border p-2 rounded" required />
-          <input v-model="p.expiryDate" type="date" class="border p-2 rounded" />
+          <input
+            v-model="p.expiryDate"
+            type="date"
+            class="border p-2 rounded"
+          />
           <input
             v-model.number="p.quantity"
             type="number"
@@ -111,19 +106,16 @@ const token = localStorage.getItem('auth_token') || ''
 
 const props = defineProps<{
   warehouses: any[]
-  suppliers: any[]
   products: any[]
 }>()
 
 const form = ref({
   warehouse_id: '',
-  supplier_id: '',
   totalItemsExpected: 0,
   products: [
     {
       productId: '',
       quantity: null,
-      batchNumber: '',
       costPrice: null,
       warehouseLocationId: '',
       expiryDate: '',
@@ -136,11 +128,15 @@ const selectedWarehouseLocations = computed(() => {
   return warehouse ? warehouse.warehouseLocations || [] : []
 })
 
+// Tính tổng quantity của tất cả sản phẩm
+const totalItemsExpected = computed(() =>
+  form.value.products.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0)
+)
+
 function addProduct() {
   form.value.products.push({
     productId: '',
     quantity: 0,
-    batchNumber: '',
     costPrice: 0,
     warehouseLocationId: '',
     expiryDate: '',
@@ -148,6 +144,7 @@ function addProduct() {
 }
 
 async function submit() {
+  form.value.totalItemsExpected = totalItemsExpected.value
   const res = await fetch(`${baseURL}/scmlink/receivingNotes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

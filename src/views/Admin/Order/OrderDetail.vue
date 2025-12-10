@@ -22,6 +22,20 @@
               icon="edit"
               @click="showUpdateModal = true"
             />
+            <button
+              @click="exportAllCSV"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Export CSV
+            </button>
           </div>
         </div>
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 text-theme-sm dark:text-gray-200">
@@ -31,7 +45,7 @@
           <div><strong>Customer:</strong> {{ order?.customerName }}</div>
           <div><strong>Phone:</strong> {{ order?.customerPhone }}</div>
           <div><strong>Email:</strong> {{ order?.customerEmail }}</div>
-          <div><strong>Shipping Address:</strong> {{ order?.shippingAddress }}</div>
+          <div><strong>Shipping Address:</strong> {{ order?.shippingAddress + ', ' + order?.shippingCity }}</div>
           <div><strong>Total Amount:</strong> {{ formatCurrency(order?.totalAmount) }}</div>
           <div><strong>Payment Status:</strong> {{ order?.paymentStatus }}</div>
           <div class="col-span-2"><strong>Note:</strong> {{ order?.note || '—' }}</div>
@@ -46,12 +60,6 @@
           <h2 class="text-lg font-semibold text-gray-800 dark:text-white">
             Order Items & Batch Allocations
           </h2>
-          <button
-            @click="exportCSV"
-            class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-          >
-            Export CSV
-          </button>
         </div>
         <table class="w-full text-sm border border-gray-200 dark:border-gray-800 rounded-lg">
           <thead class="bg-gray-50 dark:bg-gray-900">
@@ -127,12 +135,7 @@
           <h2 class="text-lg font-semibold text-gray-800 dark:text-white">
             Inventory Transactions
           </h2>
-          <button
-            @click="exportTransactionCSV"
-            class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-          >
-            Export CSV
-          </button>
+          
         </div>
 
         <div v-if="loadingTransactions" class="p-8 text-center text-gray-400">
@@ -216,9 +219,9 @@
 
     <OrderUpdateModal
       v-if="showUpdateModal"
-      :order="order"
+      :orderId="order.id"
       @close="showUpdateModal = false"
-      @updated="fetchOrderDetail"
+      @updated="fetchOrderDetail(); fetchOrderTransactions()"
     />
   </AdminLayout>
 </template>
@@ -264,7 +267,7 @@ async function fetchOrderTransactions() {
     )
     const data = await res.json()
     if (data.code === 1000) {
-      transactions.value = data.result
+      transactions.value = data.result.content
     } else {
       transactionError.value = data.message || 'Failed to load transactions'
     }
@@ -314,9 +317,23 @@ function statusBadge(status: string) {
   return map[status] || 'bg-gray-100 text-gray-800'
 }
 
-function exportCSV() {
+function exportAllCSV() {
   if (!order.value) return
-  const rows = [['Product', 'SKU', 'Batch', 'Expiry', 'Quantity', 'Unit Price', 'Total']]
+  const rows = [
+    ['Order Code', order.value.orderCode],
+    ['Created At', formatDate(order.value.createdAt)],
+    ['Created By', order.value.createdBy],
+    ['Customer', order.value.customerName],
+    ['Phone', order.value.customerPhone],
+    ['Email', order.value.customerEmail],
+    ['Shipping Address', order.value.shippingAddress + ', ' + order.value.shippingCity],
+    ['Total Amount', formatCurrency(order.value.totalAmount)],
+    ['Payment Status', order.value.paymentStatus],
+    ['Order Status', order.value.orderStatus],
+    ['Note', order.value.note || '—'],
+    [],
+    ['Product', 'SKU', 'Batch', 'Expiry', 'Quantity', 'Unit Price', 'Total'],
+  ]
   order.value.orderItems.forEach((item) => {
     item.batchAllocations.forEach((batch) => {
       rows.push([
@@ -330,11 +347,25 @@ function exportCSV() {
       ])
     })
   })
+  rows.push([])
+  rows.push(['Inventory Transactions'])
+  rows.push(['Date', 'User', 'Type', 'SKU', 'Warehouse', 'Qty Change', 'Note'])
+  transactions.value.forEach((t) => {
+    rows.push([
+      formatDateTime(t.createdAt),
+      t.createdBy,
+      t.transactionType,
+      t.inventoryLevel?.product?.sku,
+      t.inventoryLevel?.warehouse?.name,
+      t.quantityChange,
+      t.note || '—',
+    ])
+  })
   const csv = rows.map((r) => r.join(',')).join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   link.href = URL.createObjectURL(blob)
-  link.download = `${order.value.orderCode || 'order'}_details.csv`
+  link.download = `${order.value.orderCode || 'order'}_all.csv`
   link.click()
 }
 </script>

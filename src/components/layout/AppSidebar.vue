@@ -50,7 +50,7 @@
     >
       <nav class="mb-6">
         <div class="flex flex-col gap-4">
-          <div v-for="(menuGroup, groupIndex) in menuGroups" :key="groupIndex">
+          <div v-for="(menuGroup, groupIndex) in menuGroupsComputed" :key="groupIndex">
             <h2
               :class="[
                 'mb-4 text-xs uppercase flex leading-[20px] text-gray-400',
@@ -66,8 +66,28 @@
             </h2>
             <ul class="flex flex-col gap-4">
               <li v-for="(item, index) in menuGroup.items" :key="item.name">
+                <!-- Logout item (when logged in) -->
                 <button
-                  v-if="item.subItems"
+                  v-if="item.isLogout"
+                  @click="signOut"
+                  :class="[
+                    'menu-item group w-full',
+                    !isExpanded && !isHovered ? 'lg:justify-center' : 'lg:justify-start',
+                  ]"
+                >
+                  <span :class="['menu-item-icon-inactive']">
+                    <component :is="item.icon" />
+                  </span>
+                  <span
+                    v-if="isExpanded || isHovered || isMobileOpen"
+                    class="menu-item-text"
+                    >{{ item.name }}</span
+                  >
+                </button>
+
+                <!-- Submenu -->
+                <button
+                  v-else-if="item.subItems"
                   @click="toggleSubmenu(groupIndex, index)"
                   :class="[
                     'menu-item group w-full',
@@ -107,6 +127,8 @@
                     ]"
                   />
                 </button>
+
+                <!-- Normal link -->
                 <router-link
                   v-else-if="item.path"
                   :to="item.path"
@@ -212,7 +234,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import {
   GridIcon,
@@ -232,15 +254,19 @@ import {
   ShippingIcon,
   WarehouseIcon,
   OrderIcon,
+  LogoutIcon
 } from "../../icons";
 import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
 import UserGroupIcon from '@/icons/UserGroupIcon.vue'
 import { useSidebar } from "@/composables/useSidebar";
+import * as auth from '@/services/auth'
 
 const route = useRoute();
+const router = useRouter();
 
 const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
 
+// original menu definition
 const menuGroups = [
   {
     title: "Menu",
@@ -273,12 +299,8 @@ const menuGroups = [
       },
       {
         icon: OrderIcon,
-        name: "Orders",
-        subItems: [
-          { name: "Order List", path: "/admin/orders", pro: false },
-          { name: "Create order", path: "/admin/create-order", pro: false },
-          { name: "History", path: "/admin/order-history", pro: false },
-        ],
+        name: "Orders", 
+        path: "/admin/orders"
       },
       {
         icon: ShippingIcon,
@@ -286,7 +308,7 @@ const menuGroups = [
         subItems: [
           { name: "Vehicles", path: "/admin/vehicles", pro: false },
           { name: "Deliveries", path: "/admin/deliveries", pro: false },
-          { name: "History", path: "/admin/logistics-history", pro: false },
+          { name: "History", path: "/admin/tracking-history", pro: false },
         ],
       },
       {
@@ -352,4 +374,40 @@ const startTransition = (el) => {
 const endTransition = (el) => {
   el.style.height = "";
 };
+
+// new: compute if user is logged in
+const isLoggedIn = computed(() => !!auth.getToken())
+
+// computed menu groups: hide Authentication when logged in and add Sign out
+const menuGroupsComputed = computed(() => {
+  return menuGroups.map((g) => {
+    const copy = { ...g, items: [...g.items] }
+    if (isLoggedIn.value) {
+      // remove Authentication item
+      copy.items = copy.items.filter((it) => it.name !== 'Authentication')
+      // inject Sign out into "Others" group
+      if (copy.title === 'Others') {
+        copy.items.push({
+          icon: LogoutIcon,
+          name: 'Sign out',
+          isLogout: true,
+        })
+      }
+    }
+    return copy
+  })
+})
+
+const signOut = async () => {
+  try {
+    await auth.logout()
+  } catch (e) {
+    console.warn('logout failed', e)
+  } finally {
+    auth.setToken(null)
+    auth.setRefreshToken(null)
+    auth.setUserInfo(null)
+    router.push('/signin')
+  }
+}
 </script>

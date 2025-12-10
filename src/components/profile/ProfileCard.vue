@@ -6,7 +6,7 @@
           <div
             class="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800"
           >
-            <img src="/images/user/owner.jpg" alt="user" />
+            <img :src="imageUrl || '/images/user/owner.jpg'" alt="user" />
           </div>
           <div class="order-3 xl:order-2">
             <h4
@@ -301,7 +301,24 @@
                     />
                   </div>
 
-                  <div class="col-span-2">
+                  <div class="col-span-2 lg:col-span-1">
+                    <label
+                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                    >
+                      Avatar
+                    </label>
+                    <div class="flex items-center gap-4">
+                      <div class="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
+                        <img :src="imageUrl || '/images/user/owner.jpg'" alt="Avatar" class="object-cover w-full h-full" />
+                      </div>
+                      <label class="cursor-pointer px-3 py-2 bg-gray-100 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700">
+                        Upload Image
+                        <input type="file" class="hidden" @change="handleAvatarUpload" />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="col-span-2 lg:col-span-1">
                     <label
                       class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
                     >
@@ -363,11 +380,15 @@ const phoneNumber = ref('')
 const dob = ref('')
 const address = ref('')
 const isActive = ref(true)
-const roles = ref([]) // Selected roles
-const allRoles = ref([]) // All available roles from API
+const roles = ref([])
+const allRoles = ref([])
 const alert = ref({ type: '', message: '' })
 const isAdmin = ref(false)
+const avatar = ref(null)
+const imageUrl = ref('')
+const uploading = ref(false)
 
+// Load user info
 onMounted(async () => {
   const stored = localStorage.getItem('user_info')
   if (stored) {
@@ -378,52 +399,87 @@ onMounted(async () => {
     dob.value = info.dob || ''
     address.value = info.address || ''
     username.value = info.username || ''
-    // roles: array of strings or array of objects
+    imageUrl.value = info.imageUrl || ''
     roles.value = Array.isArray(info.roles)
       ? info.roles.map((r) => (typeof r === 'string' ? r : r.name))
       : []
     isAdmin.value = roles.value.includes('ADMIN')
   }
-  // Only fetch all roles if user is ADMIN
   if (isAdmin.value) {
     try {
       const token = localStorage.getItem('auth_token')
       const res = await fetch(`${baseURL}/scmlink/roles`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
       if (data.code === 1000 && Array.isArray(data.result)) {
         allRoles.value = data.result.map((r) => r.name)
       }
-      if (res.status === 403) {
-        router.push('/403')
-        return
-      }
-      if (res.status === 500) {
-        router.push('/500')
-        return
-      }
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`)
-      }
     } catch (e) {
       console.error(e)
     }
   } else {
-    // For USER, just show their roles
     allRoles.value = roles.value
   }
 })
 
+// Upload image giống như product, chỉ update khi upload thành công
+async function handleAvatarUpload(e) {
+  const files = e.target.files
+  if (files && files[0]) {
+    uploading.value = true
+    avatar.value = files[0]
+    // Preview tạm thời
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      imageUrl.value = ev.target?.result
+    }
+    reader.readAsDataURL(files[0])
+
+    // Upload lên server
+    const token = localStorage.getItem('auth_token')
+    const formData = new FormData()
+    formData.append('file', files[0])
+    try {
+      const res = await fetch(`${baseURL}/scmlink/uploads/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+      const data = await res.json()
+      if (data.code === 1000 && data.result) {
+        imageUrl.value = data.result // Chỉ update khi upload thành công
+        console.log('Image URL:', imageUrl.value)
+      } else {
+        alert.value = {
+          show: true,
+          type: 'error',
+          title: 'Error',
+          message: 'Upload avatar failed.',
+        }
+        setTimeout(() => (alert.value.show = false), 3000)
+      }
+    } catch (e) {
+      alert.value = {
+        show: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Upload avatar failed.',
+      }
+      setTimeout(() => (alert.value.show = false), 3000)
+    } finally {
+      uploading.value = false
+    }
+  }
+}
+
 const saveProfile = async () => {
+  if (uploading.value) return // Đang upload thì không cho update
   alert.value = { type: '', message: '' }
   setTimeout(() => (alert.value = { type: '', message: '' }), 3000)
 
   const token = localStorage.getItem('auth_token')
   try {
-    // Build payload
     const payload = {
       email: email.value,
       fullName: fullName.value,
@@ -431,8 +487,8 @@ const saveProfile = async () => {
       dob: dob.value,
       address: address.value,
       isActive: isActive.value,
+      imageUrl: imageUrl.value,
     }
-    // Only ADMIN can update roles
     if (isAdmin.value) {
       payload.roles = roles.value
     }

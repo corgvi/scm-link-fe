@@ -37,26 +37,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const options = [
-  { value: 'optionOne', label: 'Monthly' },
-  { value: 'optionTwo', label: 'Quarterly' },
-  { value: 'optionThree', label: 'Annually' },
-]
-
-const selected = ref('optionOne')
+import { ref, watch, onMounted } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 
+const baseURL = import.meta.env.VITE_BASE_URL
+const token = localStorage.getItem('auth_token') || ''
+
+const options = [
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'annually', label: 'Annually' },
+]
+
+const selected = ref('monthly')
+
 const series = ref([
-  {
-    name: 'Sales',
-    data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235],
-  },
-  {
-    name: 'Revenue',
-    data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140],
-  },
+  { name: 'Sales', data: [] },
+  { name: 'Revenue', data: [] },
 ])
 
 const chartOptions = ref({
@@ -69,9 +66,7 @@ const chartOptions = ref({
   chart: {
     fontFamily: 'Outfit, sans-serif',
     type: 'area',
-    toolbar: {
-      show: false,
-    },
+    toolbar: { show: false },
   },
   fill: {
     gradient: {
@@ -84,66 +79,56 @@ const chartOptions = ref({
     curve: 'straight',
     width: [2, 2],
   },
-  markers: {
-    size: 0,
-  },
-  labels: {
-    show: false,
-    position: 'top',
-  },
+  markers: { size: 0 },
+  labels: { show: false, position: 'top' },
   grid: {
-    xaxis: {
-      lines: {
-        show: false,
-      },
-    },
-    yaxis: {
-      lines: {
-        show: true,
-      },
-    },
+    xaxis: { lines: { show: false } },
+    yaxis: { lines: { show: true } },
   },
-  dataLabels: {
-    enabled: false,
-  },
+  dataLabels: { enabled: false },
   tooltip: {
-    x: {
-      format: 'dd MMM yyyy',
-    },
+    x: { format: 'dd MMM yyyy' },
+    y: [
+      { formatter: (val: number) => Math.round(val) },
+      { formatter: (val: number) => Number(val).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) },
+    ],
   },
   xaxis: {
     type: 'category',
-    categories: [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ],
-    axisBorder: {
-      show: false,
-    },
-    axisTicks: {
-      show: false,
-    },
-    tooltip: {
-      enabled: false,
-    },
+    categories: [],
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+    tooltip: { enabled: false },
   },
   yaxis: {
-    title: {
-      style: {
-        fontSize: '0px',
-      },
-    },
+    title: { style: { fontSize: '0px' } },
   },
+})
+
+async function fetchStatistics(mode = 'monthly') {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/statistics?mode=${mode}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000 && data.result) {
+      chartOptions.value.xaxis.categories = data.result.labels
+      series.value = [
+        { name: 'Sales', data: data.result.sales },
+        { name: 'Revenue', data: data.result.revenue },
+      ]
+    }
+  } catch (e) {
+    // handle error
+  }
+}
+
+watch(selected, (val) => {
+  fetchStatistics(val)
+})
+
+onMounted(() => {
+  fetchStatistics(selected.value)
 })
 </script>
 
