@@ -36,7 +36,7 @@
         >
           <p class="text-gray-500 dark:text-gray-400">Total Products</p>
           <p class="text-2xl font-semibold text-gray-800 dark:text-white">
-            {{ inventorySummary.length }}
+            {{ totalElements }}
           </p>
         </div>
         <div
@@ -168,7 +168,10 @@
                   {{ item.productName }}
                 </td>
                 <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                  {{ item.warehouseName }}
+                  <span v-if="item.warehouseName">{{ item.warehouseName }}</span>
+                  <span v-else-if="item.warehouseId">
+                    {{ warehouseNameMap[item.warehouseId] || '...' }}
+                  </span>
                 </td>
                 <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
                   {{ item.totalQuantity }}
@@ -231,9 +234,10 @@
                       <thead>
                         <tr class="bg-gray-100 dark:bg-gray-700">
                           <th class="p-2 text-left">Batch</th>
-                          <th class="p-2 text-left">Created</th>
+                          <th class="p-2 text-left">Location</th>
                           <th class="p-2 text-left">Expiry</th>
                           <th class="p-2 text-left">Quantity</th>
+                          <th class="p-2 text-left">Available</th>
                           <th class="p-2 text-left">Cost Price</th>
                           <th class="p-2 text-left">Sell Price</th>
                           <th class="p-2 text-left">Total Cost</th>
@@ -242,9 +246,10 @@
                       <tbody>
                         <tr v-for="batch in batchDetails[item.productId]" :key="batch.batchNumber">
                           <td class="p-2">{{ batch.batchNumber }}</td>
-                          <td class="p-2">{{ formatDate(batch.createdAt) }}</td>
+                          <td class="p-2">{{ batch.locationCode }}</td>
                           <td class="p-2">{{ formatDate(batch.expiryDate) }}</td>
                           <td class="p-2">{{ batch.quantity }}</td>
+                          <td class="p-2">{{ batch.quantityAvailable }}</td>
                           <td class="p-2">{{ formatCurrency(batch.costPrice) }}</td>
                           <td class="p-2">
                             {{ formatCurrency(batch.sellPrice) }}
@@ -268,6 +273,67 @@
             </template>
           </tbody>
         </table>
+        <!-- Pagination -->
+        <div class="flex flex-col items-center justify-between border-t border-gray-200 px-5 py-4 sm:flex-row dark:border-gray-800 mt-4">
+          <!-- Left summary -->
+          <div class="pb-3 sm:pb-0">
+            <span class="block text-sm font-medium text-gray-500 dark:text-gray-400">
+              Showing
+              <span class="text-gray-800 dark:text-white/90">{{ (currentPage - 1) * itemsPerPage + (paginatedInventory.length ? 1 : 0) }}</span>
+              to
+              <span class="text-gray-800 dark:text-white/90">{{ (currentPage - 1) * itemsPerPage + paginatedInventory.length }}</span>
+              of
+              <span class="text-gray-800 dark:text-white/90">{{ totalElements }}</span>
+            </span>
+          </div>
+
+          <!-- Controls -->
+          <div class="flex w-full items-center justify-between gap-2 rounded-lg bg-gray-50 p-4 sm:w-auto sm:justify-normal sm:bg-transparent sm:p-0 dark:bg-white/[0.03] dark:sm:bg-transparent">
+            <button
+              class="shadow-theme-xs flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 hover:text-gray-800 sm:p-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+              @click="previousPage"
+              :disabled="currentPage === 1"
+              :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''"
+            >
+              <span>
+                <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z" fill=""></path>
+                </svg>
+              </span>
+            </button>
+
+            <span class="block text-sm font-medium text-gray-700 sm:hidden dark:text-gray-400">Page {{ currentPage }} of {{ totalPages }}</span>
+
+            <ul class="hidden items-center gap-0.5 sm:flex">
+              <li v-for="page in visiblePages" :key="page">
+                <a href="#" @click.prevent="goToPage(page)" :class="page === currentPage ? 'bg-brand-500 text-white' : 'hover:bg-brand-500 text-gray-700 hover:text-white dark:text-gray-400 dark:hover:text-white'" class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium">
+                  {{ page }}
+                </a>
+              </li>
+
+              <li v-if="visiblePages[visiblePages.length - 1] < totalPages">
+                <span class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 dark:text-gray-400">...</span>
+              </li>
+
+              <li v-if="visiblePages[visiblePages.length - 1] < totalPages">
+                <a href="#" @click.prevent="goToPage(totalPages)" class="hover:bg-brand-500 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:text-white dark:text-gray-400 dark:hover:text-white">{{ totalPages }}</a>
+              </li>
+            </ul>
+
+            <button
+              class="shadow-theme-xs flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 hover:text-gray-800 sm:p-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''"
+            >
+              <span>
+                <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z" fill=""></path>
+                </svg>
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <!-- Modals -->
@@ -282,17 +348,17 @@
     <ProductReceiveModal
       v-if="showProductReceiveModal"
       :product="selectedProduct"
+      :warehouseId="selectedProduct?.warehouseId"
       @close="showProductReceiveModal = false"
       @submitted="handleProductSubmit"
       :warehouses="warehouses"
-      :suppliers="suppliers"
       :products="products"
     />
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import GlobalReceiveModal from './GlobalReceiveModal.vue'
@@ -305,6 +371,13 @@ const token = localStorage.getItem('auth_token') || ''
 const inventorySummary = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
+// server-side pagination meta
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+const totalPages = ref(1)
+const totalElements = ref(0)
+const pageNumber = ref(0)
+
 const expandedId = ref<string | null>(null)
 const batchDetails = ref<Record<string, any[]>>({})
 const warehouses = ref<any[]>([])
@@ -313,8 +386,6 @@ const products = ref<any[]>([])
 const warehouseLocations = ref<any[]>([])
 
 const searchQuery = ref('')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
 const alert = reactive({
   show: false,
   type: 'success',
@@ -325,31 +396,58 @@ const alert = reactive({
 const showGlobalReceiveModal = ref(false)
 const showProductReceiveModal = ref(false)
 const selectedProduct = ref<any>(null)
+const warehouseNameMap = ref<Record<string, string>>({})
 
 function openGlobalReceiveModal() {
   showGlobalReceiveModal.value = true
 }
+
+// Hàm lấy tên kho từ API và cache lại
+async function getWarehouseName(warehouseId: string) {
+  if (!warehouseId) return ''
+  if (warehouseNameMap.value[warehouseId]) return warehouseNameMap.value[warehouseId]
+  try {
+    const res = await fetch(`${baseURL}/scmlink/warehouses/${warehouseId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000 && data.result?.name) {
+      warehouseNameMap.value[warehouseId] = data.result.name
+      return data.result.name
+    }
+  } catch (e) {
+    // fallback
+  }
+  return warehouseId
+}
+
+// Khi mở modal nhận hàng, truyền warehouseId
 function openReceiveModal(product: any) {
   selectedProduct.value = product
   showProductReceiveModal.value = true
 }
 
 // Fetch summary
-async function fetchInventory() {
+async function fetchInventory(page = 1) {
   loading.value = true
+  error.value = ''
   try {
-    const res = await fetch(`${baseURL}/scmlink/inventoryLevels/summary`, {
+    const pageIndex = Math.max(0, page)
+    const res = await fetch(`${baseURL}/scmlink/inventoryLevels/summary?page=${pageIndex}&size=${itemsPerPage.value}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     const data = await res.json()
-    if (data.code === 1000) {
-      inventorySummary.value = data.result
-    } else {
-      error.value = data.message || 'Failed to fetch inventory'
-    }
+    const pageData = data?.result || data || {}
+    const content = pageData.content || pageData.items || []
+    inventorySummary.value = Array.isArray(content) ? content : []
+
+    totalElements.value = pageData.totalElements ?? inventorySummary.value.length
+    totalPages.value = pageData.totalPages ?? Math.max(1, Math.ceil((totalElements.value || 0) / itemsPerPage.value))
+    pageNumber.value = pageData.pageNumber ?? pageIndex
+    currentPage.value = (pageNumber.value || 0) + 1
   } catch (e) {
-    error.value = 'Network error. Please try again.'
     console.error(e)
+    error.value = 'Network error. Please try again.'
   } finally {
     loading.value = false
   }
@@ -360,7 +458,7 @@ async function fetchWarehouses() {
       headers: { Authorization: `Bearer ${token}` },
     })
     const data = await res.json()
-    if (data.code === 1000) warehouses.value = data.result
+    if (data.code === 1000) warehouses.value = data.result.content
     console.log(warehouses.value)
   } catch (e) {
     console.error(e)
@@ -372,7 +470,7 @@ async function fetchSuppliers() {
       headers: { Authorization: `Bearer ${token}` },
     })
     const data = await res.json()
-    if (data.code === 1000) suppliers.value = data.result
+    if (data.code === 1000) suppliers.value = data.result.content
   } catch (e) {
     console.error(e)
   }
@@ -383,7 +481,7 @@ async function fetchProducts() {
       headers: { Authorization: `Bearer ${token}` },
     })
     const data = await res.json()
-    if (data.code === 1000) products.value = data.result
+    if (data.code === 1000) products.value = data.result.content
   } catch (e) {
     console.error(e)
   }
@@ -394,7 +492,7 @@ async function fetchWarehouseLocations() {
       headers: { Authorization: `Bearer ${token}` },
     })
     const data = await res.json()
-    if (data.code === 1000) warehouseLocations.value = data.result
+    if (data.code === 1000) warehouseLocations.value = data.result.content
   } catch (e) {
     console.error(e)
   }
@@ -402,7 +500,7 @@ async function fetchWarehouseLocations() {
 onMounted(async () => {
   await Promise.all([
     fetchWarehouseLocations(),
-    fetchInventory(),
+    fetchInventory(1),
     fetchWarehouses(),
     fetchSuppliers(),
     fetchProducts(),
@@ -421,6 +519,7 @@ async function fetchBatchDetails(productId: string) {
     const data = await res.json()
     if (data.code === 1000) {
       batchDetails.value[productId] = data.result
+      console.log('Batch details for', data.result.locationCode)
     }
   } catch {
     batchDetails.value[productId] = []
@@ -448,28 +547,45 @@ function handleProductSubmit() {
   showProductReceiveModal.value = false
 }
 
-// Filtering & pagination
+// filter only within current page content
 const filteredInventory = computed(() => {
-  let list = inventorySummary.value
+  let list = inventorySummary.value.slice()
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     list = list.filter(
       (i) =>
-        i.sku.toLowerCase().includes(q) ||
-        i.productName.toLowerCase().includes(q) ||
-        i.warehouseName.toLowerCase().includes(q) ||
-        i.status.toLowerCase().includes(q),
+        (i.sku || '').toLowerCase().includes(q) ||
+        (i.productName || '').toLowerCase().includes(q) ||
+        (i.warehouseName || '').toLowerCase().includes(q) ||
+        (i.status || '').toLowerCase().includes(q),
     )
   }
   return list
 })
-const totalPages = computed(
-  () => Math.ceil(filteredInventory.value.length / itemsPerPage.value) || 1,
-)
-const paginatedInventory = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  return filteredInventory.value.slice(start, start + itemsPerPage.value)
+// paginatedInventory is the displayed rows for current page (after client-side filter)
+const paginatedInventory = computed(() => filteredInventory.value)
+
+// pagination helpers (visiblePages / navigation)
+const visiblePages = computed(() => {
+  const pages: number[] = []
+  const total = totalPages.value
+  const maxButtons = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxButtons / 2))
+  let end = Math.min(total, start + maxButtons - 1)
+  if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1)
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
 })
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) fetchInventory(page)
+}
+function previousPage() {
+  if (currentPage.value > 1) fetchInventory(currentPage.value - 1)
+}
+function nextPage() {
+  if (currentPage.value < totalPages.value) fetchInventory(currentPage.value + 1)
+}
 
 // Utils
 function formatCurrency(value: number) {
@@ -550,4 +666,12 @@ function exportCSV() {
   link.click()
   document.body.removeChild(link)
 }
+
+watch(inventorySummary, (list) => {
+  list.forEach(item => {
+    if (item.warehouseId && !warehouseNameMap.value[item.warehouseId]) {
+      getWarehouseName(item.warehouseId)
+    }
+  })
+})
 </script>

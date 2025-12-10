@@ -160,11 +160,20 @@ const router = createRouter({
       },
     },
     {
-      path: '/admin/edit-product/:productId',
-      name: 'EditProduct',
-      component: () => import('../views/Admin/Product/EditProduct.vue'),
+      path: '/admin/product-detail/:productId',
+      name: 'ProductDetail',
+      component: () => import('../views/Admin/Product/ProductDetail.vue'),
       meta: {
-        title: 'Edit Product',
+        title: 'Detail Product',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/update-product/:productId',
+      name: 'UpdateProduct',
+      component: () => import('../views/Admin/Product/UpdateProduct.vue'),
+      meta: {
+        title: 'Update Product',
         requiresAdmin: true,
       },
     },
@@ -228,6 +237,42 @@ const router = createRouter({
       component: () => import('../views/Admin/Inventory/Transactions.vue'),
       meta: {
         title: 'Transaction Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/deliveries',
+      name: 'AdminDeliveries',
+      component: () => import('../views/Admin/Logistic/Deliveries.vue'),
+      meta: {
+        title: 'Delivery Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/delivery-detail/:deliveryId',
+      name: 'AdminDeliveryDetail',
+      component: () => import('../views/Admin/Logistic/DeliveryDetail.vue'),
+      meta: {
+        title: 'Delivery Detail',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/vehicles',
+      name: 'AdminVehicles',
+      component: () => import('../views/Admin/Logistic/Vehicles.vue'),
+      meta: {
+        title: 'Vehicle Management',
+        requiresAdmin: true,
+      },
+    },
+    {
+      path: '/admin/tracking-history',
+      name: 'AdminTrackingHistory',
+      component: () => import('../views/Admin/Logistic/TrackingHistories.vue'),
+      meta: {
+        title: 'Tracking History',
         requiresAdmin: true,
       },
     },

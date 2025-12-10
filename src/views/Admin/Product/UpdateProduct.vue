@@ -12,7 +12,7 @@
     <div class="mx-auto max-w-screen-2xl p-4 md:p-6">
       <!-- Header -->
       <div class="flex flex-wrap items-center justify-between gap-3 pb-6">
-        <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">Create Product</h2>
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">Update Product</h2>
         <nav>
           <ol class="flex items-center gap-1.5">
             <li>
@@ -31,7 +31,7 @@
                 </svg>
               </router-link>
             </li>
-            <li class="text-sm text-gray-800 dark:text-white/90">Create Product</li>
+            <li class="text-sm text-gray-800 dark:text-white/90">Update Product</li>
           </ol>
         </nav>
       </div>
@@ -45,30 +45,26 @@
           <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
             <h2 class="text-lg font-medium text-gray-800 dark:text-white">Product Information</h2>
           </div>
+
           <div class="p-4 sm:p-6">
             <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <!-- Product Name -->
+              <!-- Name -->
               <div>
                 <label class="block mb-1.5 text-sm font-medium">Product Name</label>
                 <input
                   v-model="form.name"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  :class="{ 'border-red-500': showErrors && errors.name }"
-                  autocomplete="off"
                 />
-                <span v-if="showErrors && errors.name" class="text-xs text-red-500">{{ errors.name }}</span>
               </div>
 
-              <!-- Product Code -->
+              <!-- Code (disabled) -->
               <div>
                 <label class="block mb-1.5 text-sm font-medium">Product Code</label>
                 <input
                   v-model="form.code"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  :class="{ 'border-red-500': showErrors && errors.code }"
-                  autocomplete="off"
+                  disabled
+                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-700/40 dark:text-white/70"
                 />
-                <span v-if="showErrors && errors.code" class="text-xs text-red-500">{{ errors.code }}</span>
               </div>
 
               <!-- Branch Name -->
@@ -77,10 +73,7 @@
                 <input
                   v-model="form.branchName"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  :class="{ 'border-red-500': showErrors && errors.branchName }"
-                  autocomplete="off"
                 />
-                <span v-if="showErrors && errors.branchName" class="text-xs text-red-500">{{ errors.branchName }}</span>
               </div>
 
               <!-- Size -->
@@ -89,7 +82,6 @@
                 <input
                   v-model="form.size"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
                 />
               </div>
 
@@ -99,7 +91,6 @@
                 <input
                   v-model="form.color"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
                 />
               </div>
 
@@ -108,10 +99,8 @@
                 <label class="block mb-1.5 text-sm font-medium">Weight (g)</label>
                 <input
                   v-model="form.weightG"
-                  type="number"
-                  min="0"
+                  type="text"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
                 />
               </div>
 
@@ -120,10 +109,7 @@
                 <label class="block mb-1.5 text-sm font-medium">Length (cm)</label>
                 <input
                   v-model="form.lengthCm"
-                  type="number"
-                  min="0"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
                 />
               </div>
 
@@ -132,10 +118,7 @@
                 <label class="block mb-1.5 text-sm font-medium">Width (cm)</label>
                 <input
                   v-model="form.widthCm"
-                  type="number"
-                  min="0"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
                 />
               </div>
 
@@ -144,21 +127,16 @@
                 <label class="block mb-1.5 text-sm font-medium">Height (cm)</label>
                 <input
                   v-model="form.heightCm"
-                  type="number"
-                  min="0"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
                 />
               </div>
 
-              <!-- Height -->
+              <!-- Description -->
               <div>
                 <label class="block mb-1.5 text-sm font-medium">Description</label>
                 <input
                   v-model="form.description"
-                  type="text"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
                 />
               </div>
 
@@ -168,14 +146,12 @@
                 <select
                   v-model="form.categoryCode"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  :class="{ 'border-red-500': showErrors && errors.categoryCode }"
                 >
-                  <option value="" disabled>Select category</option>
+                  <option disabled value="">Select category</option>
                   <option v-for="cat in categories" :key="cat.code" :value="cat.code">
-                    {{ cat.name }} ({{ cat.code }})
+                    {{ cat.name }}
                   </option>
                 </select>
-                <span v-if="showErrors && errors.categoryCode" class="text-xs text-red-500">{{ errors.categoryCode }}</span>
               </div>
 
               <!-- Supplier -->
@@ -184,27 +160,45 @@
                 <select
                   v-model="form.supplierCode"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  :class="{ 'border-red-500': showErrors && errors.supplierCode }"
                 >
-                  <option value="" disabled>Select supplier</option>
+                  <option disabled value="">Select supplier</option>
                   <option v-for="sup in suppliers" :key="sup.code" :value="sup.code">
-                    {{ sup.name }} ({{ sup.code }})
+                    {{ sup.name }}
                   </option>
                 </select>
-                <span v-if="showErrors && errors.supplierCode" class="text-xs text-red-500">{{ errors.supplierCode }}</span>
               </div>
             </div>
-            <!-- Image Upload -->
+            <!-- Image URL / Upload (replaced input by upload UI) -->
             <div>
-              <label class="block mt-4 mb-1.5 text-sm font-medium">Image</label>
-              <div v-if="previewUrl" class="mb-2">
+              <label class="block mt-4.5 mb-1.5 text-sm font-medium">Image</label>
+
+              <!-- current image preview (from existing URL) -->
+              <div v-if="form.imageUrl" class="mb-3">
+                <img
+                  :src="form.imageUrl"
+                  alt="Product"
+                  class="w-40 h-40 object-cover rounded-md border"
+                />
+              </div>
+
+              <!-- new selected preview -->
+              <div v-if="previewUrl" class="mb-3">
+                <p class="text-xs text-gray-500 mb-2">Selected preview (confirm to upload):</p>
                 <img
                   :src="previewUrl"
                   alt="Preview"
                   class="w-40 h-40 object-cover rounded-md border"
                 />
               </div>
-              <div class="flex gap-2 items-center mb-2">
+
+              <!-- Chú ý khi chọn file mới -->
+              <div v-if="selectedFile" class="mb-2">
+                <span class="text-xs text-orange-600 font-semibold">
+                  Chú ý: Ảnh trước đó sẽ bị ghi đè khi upload ảnh mới!
+                </span>
+              </div>
+
+              <div class="flex gap-2 items-center">
                 <label class="inline-flex items-center gap-2 cursor-pointer">
                   <input type="file" accept="image/*" @change="handleFileChange" class="hidden" />
                   <span
@@ -221,6 +215,7 @@
                     Choose file
                   </span>
                 </label>
+
                 <button
                   type="button"
                   class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm bg-brand-500 text-white"
@@ -233,6 +228,7 @@
                   ></span>
                   Upload
                 </button>
+
                 <button
                   v-if="previewUrl"
                   type="button"
@@ -243,11 +239,14 @@
                   Cancel
                 </button>
               </div>
+
+              <!-- allow manual image URL editing as fallback -->
               <input
                 v-model="form.imageUrl"
                 placeholder="Or paste image URL here"
                 class="mt-3 h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
               />
+
               <p v-if="uploadError" class="text-xs text-red-500 mt-2">{{ uploadError }}</p>
               <p v-if="uploadSuccess" class="text-xs text-green-600 mt-2">
                 Image uploaded and set.
@@ -265,6 +264,7 @@
           >
             Cancel
           </button>
+
           <button
             type="submit"
             :disabled="loading"
@@ -274,7 +274,7 @@
               v-if="loading"
               class="animate-spin mr-2 w-4 h-4 border-2 border-t-transparent border-white rounded-full inline-block"
             ></span>
-            Create Product
+            Update Product
           </button>
         </div>
       </form>
@@ -283,12 +283,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import Alert from '@/components/ui/Alert.vue'
 
+const route = useRoute()
 const router = useRouter()
+const productId = route.params.productId
+
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
@@ -300,8 +303,12 @@ const alert = reactive({
   message: '',
 })
 
+const original = reactive<any>({
+})
+
 const form = reactive({
   name: '',
+  code: '',
   description: '',
   imageUrl: '',
   weightG: '',
@@ -309,86 +316,75 @@ const form = reactive({
   widthCm: '',
   heightCm: '',
   branchName: '',
-  code: '',
   size: '',
   color: '',
   categoryCode: '',
   supplierCode: '',
 })
 
-const suppliers = ref<{ code: string; name: string }[]>([])
-const categories = ref<{ code: string; name: string }[]>([])
+const suppliers = ref([])
+const categories = ref([])
 
-const errors = reactive({
-  name: '',
-  code: '',
-  branchName: '',
-  categoryCode: '',
-  supplierCode: '',
-})
-
-const showErrors = ref(false)
-
-const isFormValid = computed(() => {
-  errors.name = form.name ? '' : 'Product name is required'
-  errors.code = form.code ? '' : 'Product code is required'
-  errors.branchName = form.branchName ? '' : 'Branch name is required'
-  errors.categoryCode = form.categoryCode ? '' : 'Category is required'
-  errors.supplierCode = form.supplierCode ? '' : 'Supplier is required'
-  return (
-    !errors.name &&
-    !errors.code &&
-    !errors.branchName &&
-    !errors.categoryCode &&
-    !errors.supplierCode
-  )
-})
-
-async function handleSubmit() {
-  showErrors.value = true
-  if (!isFormValid.value) return
-  loading.value = true
-  try {
-    const payload = { ...form }
-    const res = await fetch(`${baseURL}/scmlink/products`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    })
-    const data = await res.json()
-    if (res.ok && data.code === 1000) {
-      alert.show = true
-      alert.type = 'success'
-      alert.title = 'Success'
-      alert.message = 'Product created successfully.'
-      setTimeout(() => {
-        router.push('/admin/products')
-      }, 1200)
-    } else {
-      alert.show = true
-      alert.type = 'error'
-      alert.title = 'Error'
-      alert.message = data.message || 'Failed to create product.'
-    }
-  } catch {
-    alert.show = true
-    alert.type = 'error'
-    alert.title = 'Error'
-    alert.message = 'Error creating product.'
-  } finally {
-    loading.value = false
-  }
-}
-
-// Image upload logic
+/* new upload state */
 const selectedFile = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
 const uploading = ref(false)
 const uploadError = ref('')
 const uploadSuccess = ref(false)
+const previousImageUrl = ref<string | null>(null)
+const previousImageKey = ref<string | null>(null)
+
+async function fetchProduct() {
+  const res = await fetch(`${baseURL}/scmlink/products/${productId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = await res.json()
+
+  if (res.ok && data.code === 1000) {
+    Object.assign(form, data.result)
+    Object.assign(original, JSON.parse(JSON.stringify(data.result)))
+    // Ensure select shows current value from API (by code)
+    form.categoryCode = data.result.category?.code || ''
+    form.supplierCode = data.result.supplier?.code || ''
+    // Save previous image URL for delete logic
+    previousImageUrl.value = data.result.imageUrl || ''
+    previousImageKey.value = extractImageKey(previousImageUrl.value)
+  }
+}
+
+// Extract image key from Cloudinary URL
+function extractImageKey(url: string | null): string | null {
+  if (!url) return null
+  const match = url.match(/\/(images\d+)\./)
+  return match ? match[1] : null
+}
+
+async function fetchSuppliers() {
+  const res = await fetch(`${baseURL}/scmlink/suppliers`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = await res.json()
+  if (data.code === 1000) suppliers.value = data.result.content
+}
+
+async function fetchCategories() {
+  const res = await fetch(`${baseURL}/scmlink/categories`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = await res.json()
+  if (data.code === 1000) categories.value = data.result.content
+}
+
+function getChangedFields() {
+  const changed: any = {}
+  for (const key in form) {
+    if (form[key] !== original[key]) changed[key] = form[key]
+  }
+  delete changed.code
+  return changed
+}
+
+/* Upload helpers */
 
 function handleFileChange(e: Event) {
   uploadError.value = ''
@@ -402,6 +398,7 @@ function handleFileChange(e: Event) {
     return
   }
   selectedFile.value = file
+  // preview
   previewUrl.value = URL.createObjectURL(file)
 }
 
@@ -415,6 +412,7 @@ function cancelSelection() {
   uploadSuccess.value = false
 }
 
+/* confirmUpload -> POST file to upload endpoint, set form.imageUrl to response URL */
 async function confirmUpload() {
   if (!selectedFile.value) {
     uploadError.value = 'No file selected'
@@ -425,18 +423,22 @@ async function confirmUpload() {
   uploadSuccess.value = false
   try {
     const fd = new FormData()
+    // key expected: file
     fd.append('file', selectedFile.value, selectedFile.value.name || 'image.jpg')
     const res = await fetch(`${baseURL}/scmlink/uploads/upload`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
+        // do not set Content-Type; browser will set multipart boundary
       } as any,
       body: fd,
     })
     const data = await res.json()
     if (res.ok && data.code === 1000 && data.result) {
+      // result is URL string
       form.imageUrl = data.result
       uploadSuccess.value = true
+      // clear selection but keep preview of uploaded image: revoke old preview
       if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
       previewUrl.value = null
       selectedFile.value = null
@@ -449,39 +451,77 @@ async function confirmUpload() {
       uploadError.value = data.message || 'Upload failed'
     }
   } catch (err) {
+    console.error(err)
     uploadError.value = 'Network error during upload'
   } finally {
     uploading.value = false
   }
 }
 
-async function fetchSuppliers() {
-  const res = await fetch(`${baseURL}/scmlink/suppliers`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  const data = await res.json()
-  if (data.code === 1000) {
-    suppliers.value = (data.result.content || []).map((s: any) => ({
-      code: s.code,
-      name: s.name,
-    }))
-  }
-}
+/* submit */
+async function handleSubmit() {
+  loading.value = true
+  const payload = getChangedFields()
 
-async function fetchCategories() {
-  const res = await fetch(`${baseURL}/scmlink/categories`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  const data = await res.json()
-  if (data.code === 1000) {
-    categories.value = (data.result.content || []).map((c: any) => ({
-      code: c.code,
-      name: c.name,
-    }))
+  // Check if imageUrl changed and previousImageKey exists
+  const isImageChanged =
+    form.imageUrl &&
+    previousImageUrl.value &&
+    form.imageUrl !== previousImageUrl.value &&
+    previousImageKey.value
+
+  // Delete old image if changed
+  if (isImageChanged) {
+    try {
+      await fetch(`${baseURL}/scmlink/uploads/delete/${previousImageKey.value}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      // Optionally handle response/error
+    } catch (err) {
+      // Optionally show error but continue update
+      console.error('Failed to delete old image', err)
+    }
   }
+
+  if (Object.keys(payload).length === 0) {
+    alert.show = true
+    alert.type = 'warning'
+    alert.title = 'No Changes'
+    alert.message = 'Nothing to update.'
+    loading.value = false
+    return
+  }
+
+  const res = await fetch(`${baseURL}/scmlink/products/${productId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const data = await res.json()
+
+  if (res.ok && data.code === 1000) {
+    alert.show = true
+    alert.type = 'success'
+    alert.title = 'Updated'
+    alert.message = 'Product updated successfully.'
+    setTimeout(() => router.push('/admin/products'), 1200)
+  } else {
+    alert.show = true
+    alert.type = 'error'
+    alert.title = 'Error'
+    alert.message = data.message || 'Update failed.'
+  }
+
+  loading.value = false
 }
 
 onMounted(() => {
+  fetchProduct()
   fetchSuppliers()
   fetchCategories()
 })

@@ -37,6 +37,10 @@
             <label class="block text-sm mb-1">Shipping Address</label>
             <input v-model="form.shippingAddress" required class="w-full border rounded p-2" />
           </div>
+          <div>
+            <label class="block text-sm mb-1">Shipping City</label>
+            <input v-model="form.shippingCity" required class="w-full border rounded p-2" />
+          </div>
         </div>
 
         <!-- Products -->
@@ -138,6 +142,7 @@ const form = ref({
   customerPhone: '',
   customerEmail: '',
   shippingAddress: '',
+  shippingCity: '',
   items: [
     {
       productId: '',
@@ -251,6 +256,7 @@ async function submitOrder() {
     customerPhone: form.value.customerPhone,
     customerEmail: form.value.customerEmail,
     shippingAddress: form.value.shippingAddress,
+    shippingCity: form.value.shippingCity,
     items: form.value.items
       .filter((i) => i.productId && i.quantity > 0)
       .map((i) => ({
@@ -258,6 +264,8 @@ async function submitOrder() {
         quantity: i.quantity,
       })),
   }
+
+  console.log('Submitting order', payload)
 
   const res = await fetch(`${baseURL}/scmlink/orders`, {
     method: 'POST',

@@ -31,7 +31,6 @@
             :to="item.href"
             class="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
           >
-            <!-- SVG icon would go here -->
             <component
               :is="item.icon"
               class="text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300"
@@ -42,7 +41,7 @@
       </ul>
       <router-link
         to="/signin"
-        @click="signOut"
+        @click.prevent="signOut"
         class="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
       >
         <LogoutIcon
@@ -59,6 +58,7 @@
 import { UserCircleIcon, ChevronDownIcon, LogoutIcon, SettingsIcon, InfoCircleIcon } from '@/icons'
 import { RouterLink, useRouter } from 'vue-router'
 import { ref, onMounted, onUnmounted } from 'vue'
+import * as auth from '@/services/auth'
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
@@ -100,11 +100,19 @@ const closeDropdown = () => {
   dropdownOpen.value = false
 }
 
-const signOut = () => {
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('user_info')
-  closeDropdown()
-  router.push('/signin')
+const signOut = async () => {
+  try {
+    closeDropdown()
+    await auth.logout()
+  } catch (e) {
+    // best-effort cleanup even if API fails
+    console.warn('logout failed', e)
+  } finally {
+    auth.setToken(null)
+    auth.setRefreshToken(null)
+    auth.setUserInfo(null)
+    router.push('/signin')
+  }
 }
 
 const handleClickOutside = (event) => {
