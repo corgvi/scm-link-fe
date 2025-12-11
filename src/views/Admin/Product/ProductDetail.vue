@@ -118,7 +118,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import ActionMainButton from '@/components/buttons/ActionMainButton.vue'
+import ActionMainButton from '@/components/common/ActionMainButton.vue'
 
 const route = useRoute()
 const router = useRouter()
