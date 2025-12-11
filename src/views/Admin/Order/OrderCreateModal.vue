@@ -147,7 +147,7 @@ const form = ref({
     {
       productId: '',
       quantity: 1,
-      maxQuantity: null,
+      maxQuantity: null as number | null,
       priceDisplay: '',
     },
   ],

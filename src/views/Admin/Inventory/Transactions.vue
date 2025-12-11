@@ -209,7 +209,7 @@
           <button
             v-for="page in visiblePages"
             :key="page"
-            @click="goToPage(page)"
+            @click="goToPage(page as number)"
             :class="page === currentPage ? 'bg-brand-500 text-white' : 'hover:bg-gray-100'"
             class="w-10 h-10 rounded-lg text-sm font-medium"
           >

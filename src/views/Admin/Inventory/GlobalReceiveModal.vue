@@ -115,8 +115,8 @@ const form = ref({
   products: [
     {
       productId: '',
-      quantity: null,
-      costPrice: null,
+      quantity: null as number | null,
+      costPrice: null as number | null,
       warehouseLocationId: '',
       expiryDate: '',
     },

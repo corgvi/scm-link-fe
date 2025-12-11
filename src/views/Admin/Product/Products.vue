@@ -235,7 +235,7 @@
           <button
             v-for="page in visiblePages"
             :key="page"
-            @click="goToPage(page)"
+            @click="goToPage(page as number)"
             :class="page === currentPage ? 'bg-brand-500 text-white' : 'hover:bg-gray-100'"
             class="w-10 h-10 rounded-lg text-sm font-medium"
           >
@@ -453,7 +453,9 @@ function applyFilters(newFilters: any) {
 }
 
 function resetFilters() {
-  Object.keys(filters).forEach((k) => (filters[k] = ''))
+  (Object.keys(filters) as (keyof typeof filters)[]).forEach((key) => {
+    filters[key] = ''
+  })
   isFilterOpen.value = false
   currentPage.value = 1
   triggerLoad()

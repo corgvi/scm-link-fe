@@ -11,7 +11,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Quick insights into tracking histories</p>
           </div>
           <div class="flex justify-end mt-6">
-            <ActionMainButton text="Refresh" icon="refresh" type="default" @click="fetchHistories(1)" />
+            <ActionMainButton text="Refresh" type="detail" @click="fetchHistories(1)" />
           </div>
         </div>
 

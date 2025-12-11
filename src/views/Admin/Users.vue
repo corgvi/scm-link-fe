@@ -388,7 +388,7 @@
           >
           <ul class="hidden items-center gap-0.5 sm:flex">
             <!-- First page -->
-            <li v-if="paginationPages[0] > 1">
+            <li v-if="(paginationPages[0] as number) > 1">
               <a
                 href="#"
                 @click.prevent="goToPage(1)"
@@ -399,7 +399,7 @@
             </li>
 
             <!-- Ellipsis before -->
-            <li v-if="paginationPages[0] > 2">
+            <li v-if="(paginationPages[0] as number) > 2">
               <span
                 class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-500"
                 >...</span
@@ -410,7 +410,7 @@
             <li v-for="page in paginationPages" :key="page">
               <a
                 href="#"
-                @click.prevent="goToPage(page)"
+                @click.prevent="goToPage(page as number)"
                 :class="[
                   'flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium',
                   page === currentPage
@@ -423,7 +423,7 @@
             </li>
 
             <!-- Ellipsis after -->
-            <li v-if="paginationPages[paginationPages.length - 1] < totalPages - 1">
+            <li v-if="(paginationPages[paginationPages.length - 1] as number) < totalPages - 1">
               <span
                 class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-500"
                 >...</span
@@ -431,7 +431,7 @@
             </li>
 
             <!-- Last page -->
-            <li v-if="paginationPages[paginationPages.length - 1] < totalPages">
+            <li v-if="(paginationPages[paginationPages.length - 1] as number) < totalPages">
               <a
                 href="#"
                 @click.prevent="goToPage(totalPages)"
@@ -609,7 +609,7 @@ watch(
 let searchTimer: any = null
 watch(
   () => filters.keyword,
-  (newVal) => {
+  () => {
     if (searchTimer) clearTimeout(searchTimer)
     searchTimer = setTimeout(() => {
       currentPage.value = 1
@@ -645,9 +645,13 @@ function applyFilters(newFilters: any) {
 }
 
 function resetFilters() {
-  Object.keys(filters).forEach((key) => {
-    filters[key] = Array.isArray(filters[key]) ? [] : ''
-  })
+  filters.keyword = ''
+  filters.username = ''
+  filters.email = ''
+  filters.fullName = ''
+  filters.phoneNumber = ''
+  filters.city = ''
+  filters.roles = []
   isFilterOpen.value = false
   currentPage.value = 1
   loadUsers()

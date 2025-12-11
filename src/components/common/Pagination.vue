@@ -19,9 +19,9 @@
     <div class="flex items-center gap-2">
       <button
         class="pagination-btn"
-        :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''"
-        @click="$emit('page-change', currentPage - 1)"
-        :disabled="currentPage === 1"
+        :class="current === 1 ? 'opacity-50 cursor-not-allowed' : ''"
+        @click="$emit('page-change', current - 1)"
+        :disabled="current === 1"
       >
         <span>
           <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -42,7 +42,7 @@
             @click.prevent="$emit('page-change', page)"
             :class="[
               'flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition',
-              page === currentPage
+              page === current
                 ? 'bg-brand-500 text-white'
                 : 'hover:bg-brand-500 hover:text-white',
             ]"
@@ -54,9 +54,9 @@
 
       <button
         class="pagination-btn"
-        :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''"
-        @click="$emit('page-change', currentPage + 1)"
-        :disabled="currentPage === totalPages"
+        :class="current === totalPages ? 'opacity-50 cursor-not-allowed' : ''"
+        @click="$emit('page-change', current + 1)"
+        :disabled="current === totalPages"
       >
         <span>
           <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -76,33 +76,45 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  currentPage: Number,
-  totalPages: Number,
-  totalElements: Number,
-  itemsPerPage: Number,
+interface Props {
+  currentPage: number
+  totalPages: number
+  totalElements: number
+  itemsPerPage: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  currentPage: 1,        // giá trị mặc định nếu cha không truyền
+  totalPages: 1,
+  totalElements: 0,
+  itemsPerPage: 10,
 })
 
-const start = computed(() =>
-  props.totalElements === 0 ? 0 : (props.currentPage - 1) * props.itemsPerPage + 1,
+// Bây giờ TS biết chắc chắn props không bao giờ undefined
+const start = computed(() => 
+  props.totalElements === 0 ? 0 : (props.currentPage - 1) * props.itemsPerPage + 1
 )
 
-const end = computed(() => Math.min(props.currentPage * props.itemsPerPage, props.totalElements))
+const end = computed(() => 
+  Math.min(props.currentPage * props.itemsPerPage, props.totalElements)
+)
 
 const visiblePages = computed(() => {
   const total = props.totalPages
   const current = props.currentPage
   const maxButtons = 5
-  const pages = []
+  const pages: number[] = []
 
-  let start = Math.max(1, current - Math.floor(maxButtons / 2))
-  let end = Math.min(total, start + maxButtons - 1)
+  let startPage = Math.max(1, current - Math.floor(maxButtons / 2))
+  let endPage = Math.min(total, startPage + maxButtons - 1)
 
-  if (end - start + 1 < maxButtons) {
-    start = Math.max(1, end - maxButtons + 1)
+  if (endPage - startPage + 1 < maxButtons) {
+    startPage = Math.max(1, endPage - maxButtons + 1)
   }
 
-  for (let i = start; i <= end; i++) pages.push(i)
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i)
+  }
   return pages
 })
 </script>

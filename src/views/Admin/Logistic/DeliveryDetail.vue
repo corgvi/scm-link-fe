@@ -483,7 +483,7 @@
     </div>
     <UpdateDeliveryModal
       v-if="showUpdateModal"
-      :deliveryId="route.params.deliveryId"
+      :deliveryId="(route.params.deliveryId as string)"
       @close="showUpdateModal = false"
       @updated="loadDeliveryDetail"
     />
@@ -557,6 +557,22 @@ const trackingVisiblePagination = computed(() => {
 
   return pages
 })
+
+async function loadDeliveryDetail() {
+  initialLoading.value = true
+  error.value = ''
+  try {
+    await Promise.all([
+      fetchDeliveryDetail(),
+      fetchTrackingHistories()
+    ])
+  } catch (err) {
+    error.value = 'Failed to reload delivery details.'
+    console.error(err)
+  } finally {
+    initialLoading.value = false
+  }
+}
 
 function goToTrackingPage(page: number) {
   if (page >= 1 && page <= trackingTotalPages.value) trackingPage.value = page

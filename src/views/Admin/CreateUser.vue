@@ -288,7 +288,7 @@ const form = ref({
   role: '',
   isActive: 'true',
   description: '',
-  avatar: null,
+  avatar: null as File | null,
 })
 
 const alert = ref({
