@@ -84,13 +84,14 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currentPage: 1,        // giá trị mặc định nếu cha không truyền
+  currentPage: 1,
   totalPages: 1,
   totalElements: 0,
   itemsPerPage: 10,
 })
 
-// Bây giờ TS biết chắc chắn props không bao giờ undefined
+const current = computed(() => props.currentPage)
+
 const start = computed(() => 
   props.totalElements === 0 ? 0 : (props.currentPage - 1) * props.itemsPerPage + 1
 )
@@ -106,7 +107,7 @@ const visiblePages = computed(() => {
   const pages: number[] = []
 
   let startPage = Math.max(1, current - Math.floor(maxButtons / 2))
-  let endPage = Math.min(total, startPage + maxButtons - 1)
+  const endPage = Math.min(total, startPage + maxButtons - 1)
 
   if (endPage - startPage + 1 < maxButtons) {
     startPage = Math.max(1, endPage - maxButtons + 1)

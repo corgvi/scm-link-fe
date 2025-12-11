@@ -52,7 +52,7 @@
       :currentPage="currentPage"
       :totalPages="totalPages"
       :totalElements="totalElements"
-      :itemsPerPage="itemsPerPage"
+      :itemsPerPage="itemsPerPage ?? 10"
       @page-change="handlePageChange"
     />
   </div>
