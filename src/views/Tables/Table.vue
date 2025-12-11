@@ -85,5 +85,5 @@ function handlePageChange(page: number) {
 }
 
 watch(searchQuery, () => {
-  debouncedSearch())
+  debouncedSearch()})
 </script>
