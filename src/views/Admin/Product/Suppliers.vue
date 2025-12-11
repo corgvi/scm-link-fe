@@ -300,7 +300,7 @@
                 <li v-for="page in visiblePages" :key="page">
                   <a
                     href="#"
-                    @click.prevent="goToPage(page)"
+                    @click.prevent="goToPage(page as number)"
                     :class="
                       page === currentPage
                         ? 'bg-brand-500 text-white'
@@ -312,14 +312,14 @@
                   </a>
                 </li>
 
-                <li v-if="visiblePages[visiblePages.length - 1] < totalPages">
+                <li v-if="(visiblePages[visiblePages.length - 1] as number) < totalPages">
                   <span
                     class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 dark:text-gray-400"
                     >...</span
                   >
                 </li>
 
-                <li v-if="visiblePages[visiblePages.length - 1] < totalPages">
+                <li v-if="(visiblePages[visiblePages.length - 1] as number) < totalPages">
                   <a
                     href="#"
                     @click.prevent="goToPage(totalPages)"
@@ -622,7 +622,9 @@ function applyFilters(newFilters: any) {
 }
 
 function resetFilters() {
-  Object.keys(filters).forEach((k) => (filters[k] = ''))
+  ;(Object.keys(filters) as (keyof typeof filters)[]).forEach((key) => {
+    filters[key] = ''
+  })
   isFilterOpen.value = false
   currentPage.value = 1
   loadSuppliers()

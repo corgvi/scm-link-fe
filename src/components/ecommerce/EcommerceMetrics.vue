@@ -228,9 +228,15 @@ const metrics = ref({
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
-function formatCurrency(val) {
-  if (!val) return '₫0'
-  return Number(val).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+// SỬA HÀM NÀY – ĐÃ CÓ TYPE RÕ RÀNG
+const formatCurrency = (val: number | string | null | undefined): string => {
+  const num = Number(val)
+  if (isNaN(num) || num === 0) return '₫0'
+  return num.toLocaleString('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0,
+  })
 }
 
 async function fetchMetrics() {
@@ -243,7 +249,7 @@ async function fetchMetrics() {
       metrics.value = data.result
     }
   } catch (err) {
-    // handle error
+    console.error('Failed to fetch metrics:', err)
   }
 }
 

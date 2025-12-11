@@ -98,10 +98,10 @@ const form = ref({
   products: [
     {
       productId: props.product.productId || '',
-      quantity: null,
-      costPrice: null,
-      warehouseLocationId: '',
-      expiryDate: '',
+      quantity: null as number | null,
+      costPrice: null as number | null,
+      warehouseLocationId: null as string | null,
+      expiryDate: null as string | null,
     },
   ],
 })
@@ -125,7 +125,7 @@ async function fetchWarehouseLocations() {
   }
 }
 
-function formatDateForRequest(dateStr: string) {
+function formatDateForRequest(dateStr: string | null): string | null{
   if (!dateStr) return null
   return dateStr.replace(/-/g, "/")
 }

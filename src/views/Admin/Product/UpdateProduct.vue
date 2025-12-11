@@ -322,8 +322,8 @@ const form = reactive({
   supplierCode: '',
 })
 
-const suppliers = ref([])
-const categories = ref([])
+const suppliers = ref<any[]>([])
+const categories = ref<any[]>([])
 
 /* new upload state */
 const selectedFile = ref<File | null>(null)
@@ -378,7 +378,7 @@ async function fetchCategories() {
 function getChangedFields() {
   const changed: any = {}
   for (const key in form) {
-    if (form[key] !== original[key]) changed[key] = form[key]
+    if ((form as Record<string, any>)[key] !== (original as Record<string, any>)[key]) changed[key] = (form as Record<string, any>)[key]
   }
   delete changed.code
   return changed

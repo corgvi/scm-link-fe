@@ -23,7 +23,7 @@
                   text="Update"
                   icon="edit"
                   type="update"
-                  @click="goToUpdate(product.id)"
+                  @click="goToUpdate(product.id as string)"
                 />
         </div>
       </div>
@@ -130,6 +130,7 @@ const token = localStorage.getItem('auth_token') || ''
 
 /* PRODUCT STATE */
 const product = ref({
+  id: '',
   name: '',
   code: '',
   description: '',

@@ -473,7 +473,7 @@ const loadingCreate = ref(false)
 const newLocation = ref({
   locationCode: '',
   locationType: 'FLOOR',
-  maxCapacityKg: null,
+  maxCapacityKg: null as number | null,
   available: true,
 })
 
@@ -551,7 +551,7 @@ async function addLocation(warehouseId: string) {
       newLocation.value = {
         locationCode: '',
         locationType: 'FLOOR',
-        maxCapacityKg: 0,
+        maxCapacityKg: null,
         available: true,
       }
     }

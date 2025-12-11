@@ -71,7 +71,7 @@
               v-model.number="item.quantity"
               type="number"
               min="1"
-              :max="item.maxQuantity"
+              :max="item.maxQuantity ?? undefined"
               placeholder="Qty"
               class="w-full border rounded p-2"
               :disabled="item.maxQuantity === 0"
@@ -147,7 +147,7 @@ const form = ref({
     {
       productId: '',
       quantity: 1,
-      maxQuantity: null,
+      maxQuantity: null as number | null,
       priceDisplay: '',
     },
   ],

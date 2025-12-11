@@ -315,7 +315,7 @@
     <!-- Modal Update -->
     <OrderUpdateModal
       v-if="showUpdateModal"
-      :order-id="selectedOrderId"
+      :order-id="(selectedOrderId as string)"
       @close="showUpdateModal = false"
       @updated="fetchOrders"
     />

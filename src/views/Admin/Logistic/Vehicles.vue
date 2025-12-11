@@ -98,8 +98,7 @@
           </div>
           <ActionMainButton
             text="Export"
-            icon="download"
-            type="export"
+            type="detail"
             @click="exportVehicles"
           />
         </div>
@@ -421,7 +420,7 @@ const filters = reactive({
      const csv = rows
        .map((r) =>
          r
-           .map((c) => `"${String(c).replace(/"/g, '""')}"`)
+           .map((c: any) => `"${String(c).replace(/"/g, '""')}"`)
            .join(','),
        )
        .join('\n')

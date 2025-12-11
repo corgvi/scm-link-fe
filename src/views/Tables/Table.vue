@@ -52,7 +52,7 @@
       :currentPage="currentPage"
       :totalPages="totalPages"
       :totalElements="totalElements"
-      :itemsPerPage="itemsPerPage"
+      :itemsPerPage="itemsPerPage ?? 10"
       @page-change="handlePageChange"
     />
   </div>
@@ -85,5 +85,5 @@ function handlePageChange(page: number) {
 }
 
 watch(searchQuery, () => {
-  debouncedSearch())
+  debouncedSearch()})
 </script>

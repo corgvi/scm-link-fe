@@ -334,8 +334,8 @@ function exportAllCSV() {
     [],
     ['Product', 'SKU', 'Batch', 'Expiry', 'Quantity', 'Unit Price', 'Total'],
   ]
-  order.value.orderItems.forEach((item) => {
-    item.batchAllocations.forEach((batch) => {
+  order.value.orderItems.forEach((item: any) => {
+    item.batchAllocations.forEach((batch: any) => {
       rows.push([
         batch.productName,
         batch.sku,
