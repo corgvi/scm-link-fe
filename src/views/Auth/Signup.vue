@@ -336,6 +336,7 @@ import CommonGridShape from '@/components/common/CommonGridShape.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+const baseURL = import.meta.env.VITE_BASE_URL
 const fullName = ref('')
 const username = ref('')
 const password = ref('')
@@ -369,7 +370,7 @@ const handleSubmit = async () => {
   // (Optional) Local validation here...
 
   try {
-    const response = await fetch('http://localhost:8080/scmlink/users', {
+    const response = await fetch(`${baseURL}/scmlink/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
