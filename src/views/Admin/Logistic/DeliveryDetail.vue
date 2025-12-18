@@ -511,10 +511,8 @@ const initialLoading = ref(true)
 const trackingLoading = ref(false)
 const mapLoading = ref(true)
 const error = ref('')
-const showAllHistory = ref(false)
 const trackingPage = ref(1)
 const trackingSize = ref(2) // Mỗi trang 5 dòng
-const trackingVisiblePages = ref<number[]>([])
 
 // Map
 const mapContainer = ref<HTMLElement | null>(null)

@@ -19,12 +19,16 @@
         Assign driver, vehicle, and orders to create a new delivery.
       </p>
 
+
       <!-- Form -->
+      <Alert
+        v-if="alert.show"
+        :variant="alert.type"
+        :title="alert.title"
+        :message="alert.message"
+        :duration="3000"
+      />
       <form @submit.prevent="submitCreate" class="space-y-6">
-        <!-- Error -->
-        <div v-if="errorMessage" class="text-sm text-red-600 bg-red-50 p-3 rounded">
-          {{ errorMessage }}
-        </div>
 
         <!-- Delivery Information -->
         <div class="grid grid-cols-2 gap-4">
@@ -165,7 +169,22 @@ const vehicles = ref<any[]>([])
 const allOrders = ref<any[]>([])
 
 const isSubmitting = ref(false)
-const errorMessage = ref('')
+// Alert state
+import Alert from '@/components/ui/Alert.vue'
+import { reactive } from 'vue'
+const alert = reactive({
+  show: false,
+  type: 'error',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
 
 function toggleOrder(id: string) {
   if (selectedOrders.value.includes(id)) {
@@ -251,9 +270,9 @@ function buildPayload() {
 }
 
 async function submitCreate() {
-  errorMessage.value = ''
+
   if (!canSubmit.value) {
-    errorMessage.value = 'Please fill required fields and select at least one order.'
+    alertState('error', 'Error', 'Please fill required fields and select at least one order.')
     return
   }
 
@@ -275,14 +294,17 @@ async function submitCreate() {
       // reset form for next create
       form.value = { note: '', driverId: '', vehicleLicensePlate: '', scheduledPickupTime: '' }
       selectedOrders.value = []
-      emit('created')
-      emit('close')
+      alertState('success', 'Success', 'Delivery created successfully.')
+      setTimeout(() => {
+        emit('created')
+        emit('close')
+      }, 900)
     } else {
-      errorMessage.value = data?.message || `Failed to create delivery (code:${data?.code ?? 'n/a'})`
+      alertState('error', 'Error', data?.message || `Failed to create delivery (code:${data?.code ?? 'n/a'})`)
     }
   } catch (err) {
     console.error('submitCreate', err)
-    errorMessage.value = 'Network or server error while creating delivery.'
+    alertState('error', 'Error', 'Network or server error while creating delivery.')
   } finally {
     isSubmitting.value = false
   }

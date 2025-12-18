@@ -124,7 +124,6 @@
       </div>
 
       <div v-if="loading" class="p-8 text-center text-gray-400">Loading inventory...</div>
-      <div v-else-if="error" class="p-8 text-center text-red-500">{{ error }}</div>
       <div v-else>
         <table class="w-full table-auto">
           <thead>
@@ -386,12 +385,20 @@ const products = ref<any[]>([])
 const warehouseLocations = ref<any[]>([])
 
 const searchQuery = ref('')
+import Alert from '@/components/ui/Alert.vue'
 const alert = reactive({
   show: false,
   type: 'success',
   title: '',
   message: '',
 })
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
 // Modals
 const showGlobalReceiveModal = ref(false)
 const showProductReceiveModal = ref(false)
@@ -447,7 +454,7 @@ async function fetchInventory(page = 1) {
     currentPage.value = (pageNumber.value || 0) + 1
   } catch (e) {
     console.error(e)
-    error.value = 'Network error. Please try again.'
+    alertState('error', 'Error', 'Network error. Please try again.')
   } finally {
     loading.value = false
   }

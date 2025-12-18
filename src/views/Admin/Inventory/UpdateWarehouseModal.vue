@@ -1,4 +1,11 @@
 <template>
+  <Alert
+    v-if="alert.show"
+    :variant="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :duration="3000"
+  />
   <div class="fixed inset-0 flex items-center justify-center bg-black/50 z-99999">
     <div
       class="no-scrollbar relative w-full max-w-[750px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10 shadow-lg"
@@ -92,15 +99,7 @@
             <label for="active" class="text-sm text-gray-700 dark:text-gray-200">Active</label>
           </div>
 
-          <!-- Messages -->
-          <div class="mt-4 flex flex-col gap-2">
-            <span v-if="updateError" class="text-xs text-red-500 text-center">
-              {{ updateError }}
-            </span>
-            <span v-if="updateSuccess" class="text-xs text-green-500 text-center">
-              {{ updateSuccess }}
-            </span>
-          </div>
+
 
           <!-- Actions -->
           <div class="mt-6 flex justify-end gap-2">
@@ -137,6 +136,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
+import Alert from '@/components/ui/Alert.vue'
 
 /**
  * Props
@@ -160,8 +160,20 @@ const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
 const loadingUpdate = ref(false)
-const updateError = ref('')
-const updateSuccess = ref('')
+// Alert state
+const alert = reactive({
+  show: false,
+  type: 'success',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
 
 /* ===== FORM STATE ===== */
 const form = reactive<Warehouse>({
@@ -232,15 +244,12 @@ function getChangedFields() {
 
 /* ===== SUBMIT ===== */
 async function handleUpdateWarehouse() {
-  updateError.value = ''
-  updateSuccess.value = ''
-
   if (!validateForm()) return
 
   const payload = getChangedFields()
 
   if (Object.keys(payload).length === 0) {
-    updateError.value = 'No changes detected.'
+    alertState('error', 'Error', 'No changes detected.')
     return
   }
 
@@ -257,17 +266,17 @@ async function handleUpdateWarehouse() {
     const data = await res.json()
 
     if (res.ok && data.code === 1000) {
-      updateSuccess.value = 'Warehouse updated successfully.'
+      alertState('success', 'Success', 'Warehouse updated successfully.')
       setTimeout(() => {
         emit('updated', data.result)
         closeModal()
       }, 900)
     } else {
-      updateError.value = data.message || 'Update failed'
+      alertState('error', 'Error', data.message || 'Update failed')
     }
   } catch (e) {
     console.error(e)
-    updateError.value = 'Error updating warehouse'
+    alertState('error', 'Error', 'Error updating warehouse')
   } finally {
     loadingUpdate.value = false
   }

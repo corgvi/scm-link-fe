@@ -178,7 +178,9 @@
                   />
                   <button
                     @click="confirmDeleteCategory(category)"
-                    class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+                    class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    :disabled="showDeleteModal"
+                    :title="'Delete'"
                   >
                     <img src="/images/icons/delete.svg" alt="Delete" class="w-4 h-4" />
                   </button>
@@ -203,7 +205,7 @@
           <button
             @click="previousPage"
             :disabled="currentPage === 1"
-                class="shadow-theme-xs flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 sm:p-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+            class="shadow-theme-xs flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 sm:p-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
           >
             <span>
               <svg
@@ -259,12 +261,22 @@
       </div>
     </div>
 
-    <div v-if="showCreateModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+    <div
+      v-if="showCreateModal"
+      class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4"
+    >
       <CreateCategoryModal @close="showCreateModal = false" @created="onCreated" />
     </div>
 
-    <div v-if="showEditModal" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
-      <UpdateCategoryModal :category="editForm" @close="showEditModal = false" @updated="onUpdated" />
+    <div
+      v-if="showEditModal"
+      class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4"
+    >
+      <UpdateCategoryModal
+        :category="editForm"
+        @close="showEditModal = false"
+        @updated="onUpdated"
+      />
     </div>
 
     <Modal
@@ -336,6 +348,7 @@ import { useDebounce } from '@/composables/useDebounce'
 import FilterSidebar from '@/components/layout/FilterSidebar.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ActionMainButton from '@/components/common/ActionMainButton.vue'
+import Modal from '@/components/ui/Modal.vue'
 
 interface Category {
   id?: string
@@ -357,11 +370,7 @@ const error = ref('')
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
-const loadingCreate = ref(false)
-const loadingEdit = ref(false)
 const loadingDelete = ref(false)
-const createError = ref('')
-const createSuccess = ref('')
 const editError = ref('')
 const editSuccess = ref('')
 const alert = reactive({
@@ -369,16 +378,6 @@ const alert = reactive({
   type: 'success',
   title: '',
   message: '',
-})
-
-const form = ref<Category>({
-  name: '',
-  code: '',
-  description: '',
-})
-const errors = ref({
-  name: '',
-  code: '',
 })
 
 const editForm = ref<Category>({
@@ -396,7 +395,6 @@ const categoryToDelete = ref<Category | null>(null)
 
 const totalPages = ref(1)
 const totalElements = ref(0)
-const pageNumber = ref(0)
 const isFilterOpen = ref(false)
 const isPageChanging = ref(false)
 
@@ -505,7 +503,7 @@ function applyFilters(newFilters: any) {
 }
 
 function resetFilters() {
-  (Object.keys(filters) as (keyof typeof filters)[]).forEach((key) => {
+  ;(Object.keys(filters) as (keyof typeof filters)[]).forEach((key) => {
     filters[key] = ''
   })
   isFilterOpen.value = false
@@ -588,6 +586,7 @@ async function handleDeleteCategory() {
       // reload current page (if page becomes empty, backend paging should handle)
       await loadCategories()
     } else {
+      showDeleteModal.value = false
       alert.show = true
       alert.type = 'error'
       alert.title = 'Error'
@@ -597,6 +596,7 @@ async function handleDeleteCategory() {
       }, 3000)
     }
   } catch (e) {
+    showDeleteModal.value = false
     alert.show = true
     alert.type = 'error'
     alert.title = 'Error'

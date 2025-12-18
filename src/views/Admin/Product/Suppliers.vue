@@ -178,6 +178,12 @@
                     Phone
                   </th>
                   <th class="p-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-400">
+                    Address
+                  </th>
+                  <th class="p-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-400">
+                    Note
+                  </th>
+                  <th class="p-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-400">
                     Status
                   </th>
                   <th
@@ -196,20 +202,68 @@
                   <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
                     {{ (currentPage - 1) * itemsPerPage + idx + 1 }}
                   </td>
-                  <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                    {{ s.name }}
+                  <td
+                    class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200"
+                    :title="s.name"
+                  >
+                    <span v-if="s.name && s.name.length > 20">{{
+                      s.name.slice(0, 10) + '...'
+                    }}</span>
+                    <span v-else>{{ s.name }}</span>
                   </td>
-                  <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                    {{ s.code }}
+                  <td
+                    class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200"
+                    :title="s.code"
+                  >
+                    <span v-if="s.code && s.code.length > 10">{{
+                      s.code.slice(0, 10) + '...'
+                    }}</span>
+                    <span v-else>{{ s.code }}</span>
                   </td>
-                  <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                    {{ s.contactPerson || '-' }}
+                  <td
+                    class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200"
+                    :title="s.contactPerson"
+                  >
+                    <span v-if="s.contactPerson && s.contactPerson.length > 10">{{
+                      s.contactPerson.slice(0, 10) + '...'
+                    }}</span>
+                    <span v-else>{{ s.contactPerson || '-' }}</span>
                   </td>
-                  <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                    {{ s.email }}
+                  <td
+                    class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200"
+                    :title="s.email"
+                  >
+                    <span v-if="s.email && s.email.length > 25">{{
+                      s.email.slice(0, 15) + '...'
+                    }}</span>
+                    <span v-else>{{ s.email }}</span>
                   </td>
-                  <td class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200">
-                    {{ s.phoneNumber }}
+                  <td
+                    class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200"
+                    :title="s.phoneNumber"
+                  >
+                    <span v-if="s.phoneNumber && s.phoneNumber.length > 15">{{
+                      s.phoneNumber.slice(0, 15) + '...'
+                    }}</span>
+                    <span v-else>{{ s.phoneNumber }}</span>
+                  </td>
+                  <td
+                    class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200"
+                    :title="s.address"
+                  >
+                    <span v-if="s.address && s.address.length > 30">{{
+                      s.address.slice(0, 15) + '...'
+                    }}</span>
+                    <span v-else>{{ s.address || '-' }}</span>
+                  </td>
+                  <td
+                    class="p-4 whitespace-nowrap text-theme-sm dark:text-gray-200"
+                    :title="s.note"
+                  >
+                    <span v-if="s.note && s.note.length > 10">{{
+                      s.note.slice(0, 10) + '...'
+                    }}</span>
+                    <span v-else>{{ s.note || '-' }}</span>
                   </td>
                   <td class="p-4 whitespace-nowrap text-center">
                     <span
@@ -231,8 +285,10 @@
                         @click="openEditModal(s)"
                       />
                       <button
-                        class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+                        class="inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-700 transition disabled:opacity-50"
                         @click="confirmDeleteSupplier(s)"
+                        :disabled="loadingDelete"
+                        title="Delete"
                       >
                         <img src="/images/icons/delete.svg" alt="Delete" class="w-4 h-4" />
                       </button>
@@ -379,45 +435,45 @@
         v-if="showDeleteModal"
         :fullScreenBackdrop="true"
         :backdropClass="'bg-black bg-opacity-60'"
-        @close="showDeleteModal = false"
+        @close="!loadingDelete && (showDeleteModal = false)"
       >
         <template #body>
-          <button
-            @click="showDeleteModal = false"
-            class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white text-2xl font-bold focus:outline-none"
-            aria-label="Close"
-          >
-            &times;
-          </button>
-          <h3 class="text-xl font-semibold text-red-600 dark:text-red-400 mb-4 text-center">
-            Delete Supplier
-          </h3>
-          <p class="mb-6 text-center text-gray-700 dark:text-gray-300">
-            Are you sure you want to delete
-            <span class="font-bold">{{ supplierToDelete?.name }}</span
-            >?
-          </p>
-          <div class="flex justify-end gap-2">
-            <button
-              type="button"
-              @click="showDeleteModal = false"
-              class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              :disabled="loadingCreate"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              @click="deleteSupplier"
-              class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition flex items-center gap-2"
-              :disabled="loadingCreate"
-            >
-              <span
-                v-if="loadingCreate"
-                class="animate-spin mr-2 w-4 h-4 border-2 border-t-transparent border-white rounded-full inline-block"
-              ></span>
-              Delete
-            </button>
+          <div class="p-2">
+            <h3 class="text-xl font-semibold text-red-600 dark:text-red-400 mb-4 text-center">
+              Delete Supplier
+            </h3>
+            <p class="mb-6 text-center text-gray-700 dark:text-gray-300">
+              Are you sure you want to delete
+              <span class="font-bold text-gray-900 dark:text-white">{{
+                supplierToDelete?.name
+              }}</span
+              >?
+              <br />
+              <span class="text-xs text-gray-500">(This action cannot be undone)</span>
+            </p>
+
+            <div class="flex justify-center gap-3">
+              <button
+                type="button"
+                @click="showDeleteModal = false"
+                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-400 transition"
+                :disabled="loadingDelete"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                @click="deleteSupplier"
+                class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition flex items-center justify-center min-w-[120px]"
+                :disabled="loadingDelete"
+              >
+                <span
+                  v-if="loadingDelete"
+                  class="animate-spin mr-2 w-4 h-4 border-2 border-t-transparent border-white rounded-full"
+                ></span>
+                {{ loadingDelete ? 'Deleting...' : 'Confirm Delete' }}
+              </button>
+            </div>
           </div>
         </template>
       </Modal>
@@ -443,6 +499,7 @@ import CreateSupplierModal from './CreateSupplierModal.vue'
 import UpdateSupplierModal from './UpdateSupplierModal.vue'
 import Alert from '@/components/ui/Alert.vue'
 import ActionMainButton from '@/components/common/ActionMainButton.vue'
+import Modal from '@/components/ui/Modal.vue'
 
 interface Supplier {
   id?: string
@@ -463,16 +520,12 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const totalPages = ref(1)
 const totalElements = ref(0)
-const pageNumber = ref(0)
 
 const searchQuery = ref('')
 const token = localStorage.getItem('auth_token') || ''
 const showCreateModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
-const loadingCreate = ref(false)
-const errorMessage = ref('')
-const successMessage = ref('')
 const loading = ref(true)
 const error = ref('')
 const products = ref<any[]>([])
@@ -487,30 +540,8 @@ const alert = reactive({
   title: '',
   message: '',
 })
-const newSupplier = ref<Supplier>({
-  name: '',
-  code: '',
-  contactPerson: '',
-  email: '',
-  address: '',
-  phoneNumber: '',
-  taxId: '',
-  note: '',
-  active: true,
-})
 const supplierToDelete = ref<Supplier | null>(null)
 const supplierToEdit = ref<Supplier | null>(null)
-
-// validation
-function validateSupplier(s: Supplier): string | null {
-  if (!s.name.trim()) return 'Name is required'
-  if (!s.code.trim()) return 'Code is required'
-  if (!s.email.trim()) return 'Email is required'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email)) return 'Invalid email format'
-  if (!s.phoneNumber.trim()) return 'Phone number is required'
-  if (!/^\d{9,11}$/.test(s.phoneNumber)) return 'Phone number must be 9-11 digits'
-  return null
-}
 
 function openEditModal(supplier: Supplier) {
   supplierToEdit.value = { ...supplier }
@@ -684,55 +715,62 @@ const filteredSuppliers = computed(() => {
 
 const paginatedSuppliers = computed(() => filteredSuppliers.value)
 
+const loadingDelete = ref(false)
+
+// Mở modal xác nhận
 function confirmDeleteSupplier(supplier: Supplier) {
   supplierToDelete.value = supplier
   showDeleteModal.value = true
 }
 
+// Xử lý gọi API DELETE
 async function deleteSupplier() {
-  if (!supplierToDelete.value) return
-  loadingCreate.value = true
-  errorMessage.value = ''
+  if (!supplierToDelete.value || !supplierToDelete.value.id || loadingDelete.value) return
+
+  loadingDelete.value = true
   try {
     const res = await fetch(`${baseURL}/scmlink/suppliers/${supplierToDelete.value.id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     })
+
     const data = await res.json()
-    if (res.ok && data.code === 1000) {
-      await loadSuppliers()
+
+    if (data.code === 1000) {
+      // Thông báo thành công
       alert.show = true
       alert.type = 'success'
       alert.title = 'Deleted'
-      alert.message = 'Supplier deleted successfully.'
-      setTimeout(() => {
-        alert.show = false
-      }, 3000)
+      alert.message = `Supplier "${supplierToDelete.value.name}" has been removed.`
+
+      // Đóng modal và tải lại danh sách
       showDeleteModal.value = false
+      await loadSuppliers()
     } else {
-      errorMessage.value = data.message || 'Failed to delete supplier'
       alert.show = true
       alert.type = 'error'
-      alert.title = 'Error'
-      alert.message = errorMessage.value
-      setTimeout(() => {
-        alert.show = false
-      }, 3000)
+      alert.title = 'Deleted'
+      alert.message = data.message || 'Failed to delete supplier. Please try again.'
+      showDeleteModal.value = false
     }
-  } catch (e) {
-    errorMessage.value = 'Network error. Please try again.'
+  } catch (e: any) {
+    console.error('Delete error:', e)
     alert.show = true
     alert.type = 'error'
     alert.title = 'Error'
-    alert.message = errorMessage.value
+    alert.message = e.message || 'Network error, please try again.'
+    showDeleteModal.value = false
+  } finally {
+    loadingDelete.value = false
+    supplierToDelete.value = null
+    showDeleteModal.value = false
+    // Tự động ẩn alert sau 3 giây
     setTimeout(() => {
       alert.show = false
     }, 3000)
-  } finally {
-    loadingCreate.value = false
-    supplierToDelete.value = null
   }
 }
 

@@ -2,7 +2,7 @@
   <transition name="fade">
     <div
       v-if="visible"
-      class="fixed top-20 right-4 z-50 w-[90%] max-w-sm"
+      class="fixed top-20 right-4 w-[90%] max-w-sm z-[999999]"
       :class="['rounded-xl border p-4 shadow-lg', variantClasses[variant].container]"
     >
       <div class="flex items-start gap-3">

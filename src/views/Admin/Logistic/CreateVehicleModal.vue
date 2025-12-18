@@ -19,12 +19,16 @@
         Enter vehicle information to add a new vehicle to the system.
       </p>
 
+
       <!-- Form -->
+      <Alert
+        v-if="alert.show"
+        :variant="alert.type"
+        :title="alert.title"
+        :message="alert.message"
+        :duration="3000"
+      />
       <form @submit.prevent="submitCreate" class="space-y-6">
-        <!-- Error -->
-        <div v-if="errorMessage" class="text-sm text-red-600 bg-red-50 p-3 rounded">
-          {{ errorMessage }}
-        </div>
 
         <!-- License Plate -->
         <div>
@@ -108,7 +112,22 @@ const form = ref({
 })
 
 const isSubmitting = ref(false)
-const errorMessage = ref('')
+// Alert state
+import Alert from '@/components/ui/Alert.vue'
+import { reactive } from 'vue'
+const alert = reactive({
+  show: false,
+  type: 'error',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
 
 /* =========================
    VALIDATION
@@ -126,10 +145,9 @@ const canSubmit = computed(() => {
    SUBMIT VEHICLE
 ========================= */
 async function submitCreate() {
-  errorMessage.value = ''
 
   if (!canSubmit.value) {
-    errorMessage.value = 'Please fill in all required fields.'
+    alertState('error', 'Error', 'Please fill in all required fields.')
     return
   }
 
@@ -155,14 +173,17 @@ async function submitCreate() {
 
     if (res.ok && data?.code === 1000) {
       form.value = { licensePlate: '', type: '', capacityKg: null }
-      emit('created')
-      emit('close')
+      alertState('success', 'Success', 'Vehicle created successfully.')
+      setTimeout(() => {
+        emit('created')
+        emit('close')
+      }, 900)
     } else {
-      errorMessage.value = data?.message || 'Failed to create vehicle.'
+      alertState('error', 'Error', data?.message || 'Failed to create vehicle.')
     }
   } catch (err) {
     console.error('submitCreate', err)
-    errorMessage.value = 'Network or server error.'
+    alertState('error', 'Error', 'Network or server error.')
   } finally {
     isSubmitting.value = false
   }

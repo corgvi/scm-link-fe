@@ -8,7 +8,6 @@
     <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">Create a new supplier by filling out the form below.</p>
 
     <div v-if="errorMessage" class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-2">{{ errorMessage }}</div>
-    <div v-if="successMessage" class="mb-4 rounded-lg bg-green-100 text-green-700 px-4 py-2">{{ successMessage }}</div>
 
     <form id="create-supplier-form" @submit.prevent="submit" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <input v-model="form.name" type="text" placeholder="Name" class="border rounded-lg px-3 py-2 dark:bg-gray-800 dark:text-white" />
@@ -36,6 +35,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'created'): void
+}>()
+
 interface SupplierPayload {
   name: string
   code: string
@@ -47,12 +52,12 @@ interface SupplierPayload {
   note?: string
   active: boolean
 }
+
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
 const loading = ref(false)
 const errorMessage = ref('')
-const successMessage = ref('')
 
 const form = ref<SupplierPayload>({
   name: '',
@@ -78,39 +83,38 @@ function validate(s: SupplierPayload) {
 
 async function submit() {
   errorMessage.value = ''
-  successMessage.value = ''
   const v = validate(form.value)
   if (v) {
     errorMessage.value = v
     return
   }
+
   loading.value = true
   try {
     const res = await fetch(`${baseURL}/scmlink/suppliers`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(form.value),
     })
+
     const data = await res.json()
-    if (res.ok && data.code === 1000) {
-      successMessage.value = 'Supplier created successfully.'
-      // notify parent to reload
-      emitCreated()
-    } else {
+
+    if (!res.ok || data.code !== 1000) {
       errorMessage.value = data.message || 'Failed to create supplier'
+      return
     }
+
+    // ✅ THÀNH CÔNG
+    emit('created')
+    emit('close')
   } catch (e) {
+    console.error(e)
     errorMessage.value = 'Network error. Please try again.'
   } finally {
     loading.value = false
   }
-}
-
-function emitCreated() {
-  // emit then close
-  // @ts-ignore
-  const emitter = defineEmits(['close','created'])
-  emitter('created')
-  emitter('close')
 }
 </script>

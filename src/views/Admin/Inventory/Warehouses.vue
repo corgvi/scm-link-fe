@@ -121,14 +121,18 @@
           </div>
         </div>
 
+        <Alert
+          v-if="alert.show"
+          :variant="alert.type"
+          :title="alert.title"
+          :message="alert.message"
+          :duration="3000"
+        />
         <div v-if="loading" class="p-8 text-center text-gray-400">
           <span
             class="animate-spin mr-2 w-6 h-6 border-2 border-t-transparent border-gray-400 rounded-full inline-block"
           ></span>
           Loading warehouses...
-        </div>
-        <div v-else-if="error" class="p-8 text-center text-red-500">
-          {{ error }}
         </div>
         <div v-else>
           <div class="custom-scrollbar overflow-x-auto">
@@ -397,9 +401,24 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { reactive } from 'vue'
 import CreateWarehouseModal from './CreateWarehouseModal.vue'
 import UpdateWarehouseModal from './UpdateWarehouseModal.vue'
 import ActionMainButton from '@/components/common/ActionMainButton.vue'
+import Alert from '@/components/ui/Alert.vue'
+const alert = reactive({
+  show: false,
+  type: 'success',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
 
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
@@ -470,7 +489,7 @@ async function fetchWarehouses() {
     currentPage.value = (pageNumber.value || 0) + 1
   } catch (err) {
     console.error(err)
-    error.value = 'Network error. Please try again.'
+    alertState('error', 'Error', 'Network error. Please try again.')
   } finally {
     loading.value = false
   }

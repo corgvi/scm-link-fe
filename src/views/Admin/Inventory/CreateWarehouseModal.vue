@@ -1,4 +1,11 @@
 <template>
+  <Alert
+    v-if="alert.show"
+    :variant="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :duration="3000"
+  />
   <div class="fixed inset-0 flex items-center justify-center bg-black/50 z-99999">
     <div
       class="no-scrollbar relative w-full max-w-[750px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10 shadow-lg"
@@ -68,14 +75,7 @@
             <span v-if="errors.city" class="text-xs text-red-500 mt-1">{{ errors.city }}</span>
           </div>
 
-          <div class="mt-4 flex flex-col gap-2">
-            <span v-if="createError" class="text-xs text-red-500 text-center">{{
-              createError
-            }}</span>
-            <span v-if="createSuccess" class="text-xs text-green-500 text-center">{{
-              createSuccess
-            }}</span>
-          </div>
+
 
           <div class="mt-6 flex justify-end gap-2">
             <button
@@ -106,6 +106,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import Alert from '@/components/ui/Alert.vue'
 
 // Emit events back to parent
 const emit = defineEmits(['close', 'created'])
@@ -114,9 +115,6 @@ const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
 const loadingCreate = ref(false)
-const createError = ref('')
-const createSuccess = ref('')
-
 const form = reactive({
   name: '',
   address: '',
@@ -131,6 +129,21 @@ const errors = reactive({
   city: '',
 })
 
+// Alert state
+const alert = reactive({
+  show: false,
+  type: 'success',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
+
 function closeModal() {
   emit('close')
 }
@@ -144,9 +157,6 @@ function validateForm() {
 }
 
 async function handleCreateWarehouse() {
-  createError.value = ''
-  createSuccess.value = ''
-
   if (!validateForm()) return
 
   loadingCreate.value = true
@@ -162,17 +172,16 @@ async function handleCreateWarehouse() {
     const data = await res.json()
 
     if (res.ok && data.code === 1000) {
-      createSuccess.value = 'Warehouse created successfully.'
-      // Delay closing slightly to show success message
+      alertState('success', 'Success', 'Warehouse created successfully.')
       setTimeout(() => {
-        emit('created', data.result) // Pass the new object back
+        emit('created', data.result)
         closeModal()
       }, 1000)
     } else {
-      createError.value = data.message || 'Failed to create warehouse'
+      alertState('error', 'Error', data.message || 'Failed to create warehouse')
     }
   } catch (e) {
-    createError.value = 'Error creating warehouse'
+    alertState('error', 'Error', 'Error creating warehouse')
     console.error(e)
   } finally {
     loadingCreate.value = false

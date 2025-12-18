@@ -1,4 +1,11 @@
 <template>
+  <Alert
+    v-if="alert.show"
+    :variant="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :duration="3000"
+  />
   <div class="fixed inset-0 flex items-center justify-center bg-black/50 z-99999">
     <div
       class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11"
@@ -191,9 +198,26 @@ async function submit() {
   })
   const data = await res.json()
   if (data.code === 1000) {
-    emit('submitted')
+    alertState('success', 'Success', 'Inventory received successfully.')
+    setTimeout(() => emit('submitted'), 1000)
   } else {
-    alert(data.message || 'Failed to submit')
+    alertState('error', 'Error', data.message || 'Failed to submit')
   }
+}
+import Alert from '@/components/ui/Alert.vue'
+import { reactive } from 'vue'
+// Alert state
+const alert = reactive({
+  show: false,
+  type: 'success',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
 }
 </script>
