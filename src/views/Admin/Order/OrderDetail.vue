@@ -252,6 +252,7 @@ async function fetchOrderDetail() {
     })
     const data = await res.json()
     if (data.code === 1000) order.value = data.result
+    console.log(order.value.shippingAddress)
   } catch {
     order.value = null
   }

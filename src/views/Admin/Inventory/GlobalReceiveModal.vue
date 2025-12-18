@@ -104,11 +104,21 @@ const emit = defineEmits(['close', 'submitted'])
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
-const props = defineProps<{
-  warehouses: any[]
-  products: any[]
-}>()
 
+
+
+interface Product {
+  id: string;
+  name: string;
+}
+const products = ref<Product[]>([])
+
+interface Warehouse {
+  id: string;
+  name: string;
+  warehouseLocations?: Array<{ id: string; locationCode: string }>;
+}
+const warehouses = ref<Warehouse[]>([])
 const form = ref({
   warehouse_id: '',
   totalItemsExpected: 0,
@@ -124,10 +134,42 @@ const form = ref({
 })
 
 const selectedWarehouseLocations = computed(() => {
-  const warehouse = props.warehouses.find((w) => w.id === form.value.warehouse_id)
+  const warehouse = warehouses.value.find((w) => w.id === form.value.warehouse_id)
   return warehouse ? warehouse.warehouseLocations || [] : []
 })
 
+async function fetchWarehouses() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/warehouses`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) {
+      warehouses.value = data.result.content || data.result || []
+    }
+  } catch {
+    warehouses.value = []
+  }
+}
+
+import { onMounted } from 'vue'
+async function fetchProducts() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/products`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) {
+      products.value = data.result.content || data.result || []
+    }
+  } catch {
+    products.value = []
+  }
+}
+onMounted(() => {
+  fetchWarehouses()
+  fetchProducts()
+})
 // Tính tổng quantity của tất cả sản phẩm
 const totalItemsExpected = computed(() =>
   form.value.products.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0)
