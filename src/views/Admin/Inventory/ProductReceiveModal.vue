@@ -101,7 +101,7 @@ const form = ref({
       quantity: null as number | null,
       costPrice: null as number | null,
       warehouseLocationId: null as string | null,
-      expiryDate: null as string | null,
+      expiryDate: '',
     },
   ],
 })
@@ -125,19 +125,9 @@ async function fetchWarehouseLocations() {
   }
 }
 
-function formatDateForRequest(dateStr: string | null): string | null{
-  if (!dateStr) return null
-  return dateStr.replace(/-/g, "/")
-}
-
 async function submit() {
   // Tính lại tổng số lượng
   form.value.totalItemsExpected = Number(form.value.products[0].quantity) || 0
-  // Format ngày
-  form.value.products[0].expiryDate = form.value.products[0].expiryDate
-    ? formatDateForRequest(form.value.products[0].expiryDate)
-    : null
-
   const res = await fetch(`${baseURL}/scmlink/receivingNotes`, {
     method: "POST",
     headers: {

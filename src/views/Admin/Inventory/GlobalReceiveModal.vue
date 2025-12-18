@@ -104,9 +104,6 @@ const emit = defineEmits(['close', 'submitted'])
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
-
-
-
 interface Product {
   id: string;
   name: string;
