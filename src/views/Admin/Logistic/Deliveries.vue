@@ -85,13 +85,19 @@
       </div>
 
       <!-- Table -->
+      <Alert
+        v-if="alert.show"
+        :variant="alert.type"
+        :title="alert.title"
+        :message="alert.message"
+        :duration="3000"
+      />
       <div v-if="loading" class="p-8 text-center text-gray-400">
         <span
           class="animate-spin mr-2 w-6 h-6 border-2 border-t-transparent border-gray-400 rounded-full inline-block"
         ></span>
         Loading...
       </div>
-      <div v-else-if="error" class="p-8 text-center text-red-500">{{ error }}</div>
       <div v-else>
         <div class="custom-scrollbar overflow-x-auto">
           <table class="w-full table-auto">
@@ -174,7 +180,7 @@
                         text="Update"
                         type="update"
                         icon="edit"
-                        @click="updateDelivery(delivery)"
+                        @click="onClickUpdate(delivery)"
                       />
                     </div>
                   </td>
@@ -276,6 +282,12 @@
       @close="isCreateDeliveryOpen = false"
       @created="fetchDeliveries()"
     />
+    <UpdateDeliveryModal
+      v-if="showUpdateModal"
+      :deliveryId="selectedDelivery?.id"
+      @close="showUpdateModal = false"
+      @updated="fetchDeliveries(currentPage)"
+    />
   </AdminLayout>
 </template>
 
@@ -286,6 +298,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ActionMainButton from '@/components/common/ActionMainButton.vue'
 import CreateDeliveryModal from './CreateDeliveryModal.vue'
+import UpdateDeliveryModal from './UpdateDeliveryModal.vue'
 
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
@@ -303,12 +316,28 @@ const totalPages = ref(1)
 const totalElements = ref(0)
 const pageNumber = ref(0)
 
-const showDetailModal = ref(false)
 const selectedDelivery = ref<any>(null)
+const showUpdateModal = ref(false)
 
 const router = useRouter()
 
 // fetch deliveries with server-side paging
+import Alert from '@/components/ui/Alert.vue'
+import { reactive } from 'vue'
+const alert = reactive({
+  show: false,
+  type: 'error',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
+
 async function fetchDeliveries(page = 1) {
   loading.value = true
   error.value = ''
@@ -333,7 +362,7 @@ async function fetchDeliveries(page = 1) {
     currentPage.value = (pageNumber.value || 0) + 1
   } catch (e) {
     console.error(e)
-    error.value = 'Error loading deliveries'
+    alertState('error', 'Error', 'Error loading deliveries')
   } finally {
     loading.value = false
   }
@@ -349,7 +378,7 @@ const filteredDeliveries = computed(() =>
 )
 
 // Overview statistics (total uses server total if available)
-const totalDeliveries = computed(() => totalElements || deliveries.value.length)
+const totalDeliveries = computed(() => totalElements.value || deliveries.value.length)
 const pendingDeliveries = computed(
   () => deliveries.value.filter((d) => d.deliveryStatus === 'PENDING').length,
 )
@@ -420,13 +449,9 @@ function formatDate(date: string) {
   return new Date(date).toLocaleString('vi-VN')
 }
 
-function viewDetail(delivery: any) {
+function onClickUpdate(delivery: any) {
   selectedDelivery.value = delivery
-  showDetailModal.value = true
-}
-
-function updateDelivery(delivery: any) {
-  // TODO: Open modal update delivery
+  showUpdateModal.value = true
 }
 
 function goToDeliveryDetail(deliveryId: string | undefined) {

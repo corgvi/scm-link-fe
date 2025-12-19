@@ -163,7 +163,6 @@
                 <td class="p-4">{{ formatDate(v.createdAt) }}</td>
                 <td class="p-4 text-center">
                   <div class="flex justify-center gap-2">
-                    <ActionMainButton text="Detail" type="detail" icon="detail" />
                     <ActionMainButton text="Update" type="update" icon="edit" @click="openUpdate(v)" />
                   </div>
                 </td>

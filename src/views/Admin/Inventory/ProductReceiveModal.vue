@@ -1,4 +1,11 @@
 <template>
+  <Alert
+    v-if="alert.show"
+    :variant="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :duration="3000"
+  />
   <div class="fixed inset-0 flex items-center justify-center bg-black/50 z-99999">
     <div
       class="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8"
@@ -101,7 +108,7 @@ const form = ref({
       quantity: null as number | null,
       costPrice: null as number | null,
       warehouseLocationId: null as string | null,
-      expiryDate: null as string | null,
+      expiryDate: '',
     },
   ],
 })
@@ -125,19 +132,9 @@ async function fetchWarehouseLocations() {
   }
 }
 
-function formatDateForRequest(dateStr: string | null): string | null{
-  if (!dateStr) return null
-  return dateStr.replace(/-/g, "/")
-}
-
 async function submit() {
   // Tính lại tổng số lượng
   form.value.totalItemsExpected = Number(form.value.products[0].quantity) || 0
-  // Format ngày
-  form.value.products[0].expiryDate = form.value.products[0].expiryDate
-    ? formatDateForRequest(form.value.products[0].expiryDate)
-    : null
-
   const res = await fetch(`${baseURL}/scmlink/receivingNotes`, {
     method: "POST",
     headers: {
@@ -148,14 +145,31 @@ async function submit() {
   })
 
   const data = await res.json()
-  if (data.code === 1000) {
-    emit("submitted")
-  } else {
-    alert(data.message || "Failed to receive inventory")
-  }
+    if (data.code === 1000) {
+      emit("submitted")
+    } else {
+      alertState('error', 'Error', data.message || "Failed to receive inventory")
+    }
 }
 
 onMounted(() => {
   fetchWarehouseLocations()
 })
+  
+// Alert state giống suppliers.vue
+import Alert from "@/components/ui/Alert.vue";
+import { reactive } from 'vue'
+const alert = reactive({
+  show: false,
+  type: 'error',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
 </script>

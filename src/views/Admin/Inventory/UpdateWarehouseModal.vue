@@ -1,0 +1,284 @@
+<template>
+  <Alert
+    v-if="alert.show"
+    :variant="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :duration="3000"
+  />
+  <div class="fixed inset-0 flex items-center justify-center bg-black/50 z-99999">
+    <div
+      class="no-scrollbar relative w-full max-w-[750px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10 shadow-lg"
+    >
+      <div>
+        <!-- Close -->
+        <button
+          @click="closeModal"
+          class="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+        >
+          ✕
+        </button>
+
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+          Update Warehouse
+        </h3>
+        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+          Update the information below. Only changed fields will be saved.
+        </p>
+
+        <form @submit.prevent="handleUpdateWarehouse" class="grid grid-cols-1 gap-6">
+          <!-- Name -->
+          <div>
+            <input
+              v-model="form.name"
+              type="text"
+              placeholder="Name"
+              class="border rounded-lg px-4 py-3 w-full dark:bg-gray-800 dark:text-white
+                     focus:ring-2 focus:ring-brand-500 transition"
+              :class="{ 'border-red-500': errors.name }"
+            />
+            <span v-if="errors.name" class="text-xs text-red-500 mt-1">
+              {{ errors.name }}
+            </span>
+          </div>
+
+          <!-- Address -->
+          <div>
+            <input
+              v-model="form.address"
+              type="text"
+              placeholder="Address"
+              class="border rounded-lg px-4 py-3 w-full dark:bg-gray-800 dark:text-white
+                     focus:ring-2 focus:ring-brand-500 transition"
+              :class="{ 'border-red-500': errors.address }"
+            />
+            <span v-if="errors.address" class="text-xs text-red-500 mt-1">
+              {{ errors.address }}
+            </span>
+          </div>
+
+          <!-- Contact Phone -->
+          <div>
+            <input
+              v-model="form.contactPhone"
+              type="text"
+              placeholder="Contact Phone"
+              class="border rounded-lg px-4 py-3 w-full dark:bg-gray-800 dark:text-white
+                     focus:ring-2 focus:ring-brand-500 transition"
+              :class="{ 'border-red-500': errors.contactPhone }"
+            />
+            <span v-if="errors.contactPhone" class="text-xs text-red-500 mt-1">
+              {{ errors.contactPhone }}
+            </span>
+          </div>
+
+          <!-- City -->
+          <div>
+            <input
+              v-model="form.city"
+              type="text"
+              placeholder="City"
+              class="border rounded-lg px-4 py-3 w-full dark:bg-gray-800 dark:text-white
+                     focus:ring-2 focus:ring-brand-500 transition"
+              :class="{ 'border-red-500': errors.city }"
+            />
+            <span v-if="errors.city" class="text-xs text-red-500 mt-1">
+              {{ errors.city }}
+            </span>
+          </div>
+
+
+          <!-- Active -->
+          <div class="flex items-center mt-2">
+            <input
+              id="active"
+              type="checkbox"
+              v-model="form.active"
+              class="mr-2 h-4 w-4 accent-brand-500"
+            />
+            <label for="active" class="text-sm text-gray-700 dark:text-gray-200">Active</label>
+          </div>
+
+
+
+          <!-- Actions -->
+          <div class="mt-6 flex justify-end gap-2">
+            <button
+              type="button"
+              @click="closeModal"
+              class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700
+                     text-gray-700 dark:text-gray-400 hover:bg-gray-100
+                     dark:hover:bg-gray-800 transition"
+              :disabled="loadingUpdate"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="px-6 py-2 rounded-lg bg-brand-500 text-white font-semibold
+                     hover:bg-brand-600 transition flex items-center gap-2"
+              :disabled="loadingUpdate"
+            >
+              <span
+                v-if="loadingUpdate"
+                class="animate-spin mr-2 w-4 h-4 border-2 border-t-transparent
+                       border-white rounded-full inline-block"
+              ></span>
+              Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref, watch } from 'vue'
+import Alert from '@/components/ui/Alert.vue'
+
+/**
+ * Props
+ * warehouse: object hiện tại cần update
+ */
+interface Warehouse {
+  id: string
+  name: string
+  address: string
+  contactPhone: string
+  city: string
+  active?: boolean
+}
+const props = defineProps<{
+  warehouse: Warehouse
+}>()
+
+const emit = defineEmits(['close', 'updated'])
+
+const baseURL = import.meta.env.VITE_BASE_URL
+const token = localStorage.getItem('auth_token') || ''
+
+const loadingUpdate = ref(false)
+// Alert state
+const alert = reactive({
+  show: false,
+  type: 'success',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
+
+/* ===== FORM STATE ===== */
+const form = reactive<Warehouse>({
+  id: '',
+  name: '',
+  address: '',
+  contactPhone: '',
+  city: '',
+  active: false,
+})
+
+/* giữ bản gốc để so sánh */
+const original = reactive<Warehouse>({
+  id: '',
+  name: '',
+  address: '',
+  contactPhone: '',
+  city: '',
+  active: false,
+})
+
+/* ===== ERRORS ===== */
+const errors = reactive({
+  name: '',
+  address: '',
+  contactPhone: '',
+  city: '',
+})
+
+/* ===== INIT FORM ===== */
+watch(
+  () => props.warehouse,
+  (val) => {
+    if (!val) return
+    // Always ensure 'active' is present
+    const withActive = { ...val, active: typeof val.active === 'boolean' ? val.active : false }
+    Object.assign(form, withActive)
+    Object.assign(original, JSON.parse(JSON.stringify(withActive)))
+  },
+  { immediate: true },
+)
+
+/* ===== UTILS ===== */
+function closeModal() {
+  emit('close')
+}
+
+function validateForm() {
+  errors.name = form.name ? '' : 'Name is required'
+  errors.address = form.address ? '' : 'Address is required'
+  errors.contactPhone = form.contactPhone ? '' : 'Contact phone is required'
+  errors.city = form.city ? '' : 'City is required'
+  return !errors.name && !errors.address && !errors.contactPhone && !errors.city
+}
+
+/**
+ * Chỉ lấy field thay đổi
+ */
+function getChangedFields() {
+  const payload = {} as Partial<Warehouse>
+  (Object.keys(form) as (keyof Warehouse)[]).forEach((key: keyof Warehouse) => {
+    if (form[key] !== original[key]) {
+      (payload[key] as unknown as string | boolean | undefined) = form[key]
+    }
+  })
+  return payload
+}
+
+/* ===== SUBMIT ===== */
+async function handleUpdateWarehouse() {
+  if (!validateForm()) return
+
+  const payload = getChangedFields()
+
+  if (Object.keys(payload).length === 0) {
+    alertState('error', 'Error', 'No changes detected.')
+    return
+  }
+
+  loadingUpdate.value = true
+  try {
+    const res = await fetch(`${baseURL}/scmlink/warehouses/${props.warehouse.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    })
+    const data = await res.json()
+
+    if (res.ok && data.code === 1000) {
+      alertState('success', 'Success', 'Warehouse updated successfully.')
+      setTimeout(() => {
+        emit('updated', data.result)
+        closeModal()
+      }, 900)
+    } else {
+      alertState('error', 'Error', data.message || 'Update failed')
+    }
+  } catch (e) {
+    console.error(e)
+    alertState('error', 'Error', 'Error updating warehouse')
+  } finally {
+    loadingUpdate.value = false
+  }
+}
+</script>

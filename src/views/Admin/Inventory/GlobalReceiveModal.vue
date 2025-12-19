@@ -1,4 +1,11 @@
 <template>
+  <Alert
+    v-if="alert.show"
+    :variant="alert.type"
+    :title="alert.title"
+    :message="alert.message"
+    :duration="3000"
+  />
   <div class="fixed inset-0 flex items-center justify-center bg-black/50 z-99999">
     <div
       class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11"
@@ -104,11 +111,18 @@ const emit = defineEmits(['close', 'submitted'])
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
-const props = defineProps<{
-  warehouses: any[]
-  products: any[]
-}>()
+interface Product {
+  id: string;
+  name: string;
+}
+const products = ref<Product[]>([])
 
+interface Warehouse {
+  id: string;
+  name: string;
+  warehouseLocations?: Array<{ id: string; locationCode: string }>;
+}
+const warehouses = ref<Warehouse[]>([])
 const form = ref({
   warehouse_id: '',
   totalItemsExpected: 0,
@@ -124,10 +138,42 @@ const form = ref({
 })
 
 const selectedWarehouseLocations = computed(() => {
-  const warehouse = props.warehouses.find((w) => w.id === form.value.warehouse_id)
+  const warehouse = warehouses.value.find((w) => w.id === form.value.warehouse_id)
   return warehouse ? warehouse.warehouseLocations || [] : []
 })
 
+async function fetchWarehouses() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/warehouses`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) {
+      warehouses.value = data.result.content || data.result || []
+    }
+  } catch {
+    warehouses.value = []
+  }
+}
+
+import { onMounted } from 'vue'
+async function fetchProducts() {
+  try {
+    const res = await fetch(`${baseURL}/scmlink/products`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const data = await res.json()
+    if (data.code === 1000) {
+      products.value = data.result.content || data.result || []
+    }
+  } catch {
+    products.value = []
+  }
+}
+onMounted(() => {
+  fetchWarehouses()
+  fetchProducts()
+})
 // Tính tổng quantity của tất cả sản phẩm
 const totalItemsExpected = computed(() =>
   form.value.products.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0)
@@ -152,9 +198,26 @@ async function submit() {
   })
   const data = await res.json()
   if (data.code === 1000) {
-    emit('submitted')
+    alertState('success', 'Success', 'Inventory received successfully.')
+    setTimeout(() => emit('submitted'), 1000)
   } else {
-    alert(data.message || 'Failed to submit')
+    alertState('error', 'Error', data.message || 'Failed to submit')
   }
+}
+import Alert from '@/components/ui/Alert.vue'
+import { reactive } from 'vue'
+// Alert state
+const alert = reactive({
+  show: false,
+  type: 'success',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
 }
 </script>

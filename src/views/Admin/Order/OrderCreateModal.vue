@@ -275,6 +275,7 @@ async function submitOrder() {
   const data = await res.json()
   if (data.code === 1000) {
     emit('submitted')
+    emit('close')
   } else {
     alert(data.message || 'Failed to create order')
   }
