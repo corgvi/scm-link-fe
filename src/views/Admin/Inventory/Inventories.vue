@@ -189,7 +189,7 @@
                 <td class="p-4 text-center">
                   <div class="flex justify-center gap-2">
                     <button
-                      @click="toggleExpand(item.productId)"
+                      @click="toggleExpand(item.productId, item.warehouseId)"
                       class="inline-flex items-center gap-2 rounded-lg border border-brand-600 bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-700 hover:bg-brand-100 hover:border-brand-700 hover:text-brand-700 transition duration-150 shadow"
                     >
                       <svg
@@ -222,14 +222,17 @@
                 </td>
               </tr>
               <!-- Expand batches -->
-              <tr v-if="expandedId === item.productId">
+              <tr v-if="expandedKey === `${item.productId}_${item.warehouseId}`">
                 <td colspan="8" class="p-4 bg-gray-50 dark:bg-gray-800">
                   <div
-                    v-if="batchDetails[item.productId] && batchDetails[item.productId].length"
-                    class="space-y-2 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
+                    v-if="
+                      batchDetails[`${item.productId}_${item.warehouseId}`] &&
+                      batchDetails[`${item.productId}_${item.warehouseId}`].length
+                    "
+                    class="space-y-2 ..."
                   >
-                    <h4 class="font-semibold text-gray-700 dark:text-gray-200">Batch Details</h4>
-                    <table class="w-full text-sm border border-gray-200 dark:border-gray-700">
+                    <h4 class="font-semibold ...">Batch Details</h4>
+                    <table class="w-full ...">
                       <thead>
                         <tr class="bg-gray-100 dark:bg-gray-700">
                           <th class="p-2 text-left">Batch</th>
@@ -243,51 +246,68 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="batch in batchDetails[item.productId]" :key="batch.batchNumber">
+                        <tr
+                          v-for="batch in batchDetails[`${item.productId}_${item.warehouseId}`]"
+                          :key="batch.batchNumber"
+                        >
                           <td class="p-2">{{ batch.batchNumber }}</td>
                           <td class="p-2">{{ batch.locationCode }}</td>
                           <td class="p-2">{{ formatDate(batch.expiryDate) }}</td>
-                          <td class="p-2">{{ batch.quantity }}</td>
+                          <td class="p-2 text-green-600 font-medium">{{ batch.quantity }}</td>
                           <td class="p-2">{{ batch.quantityAvailable }}</td>
                           <td class="p-2">{{ formatCurrency(batch.costPrice) }}</td>
-                          <td class="p-2">
-                            {{ formatCurrency(batch.sellPrice) }}
-                          </td>
-                          <td class="p-2">{{ formatCurrency(batch.totalCost) }}</td>
+                          <td class="p-2">{{ formatCurrency(batch.sellPrice) }}</td>
+                          <td class="p-2 font-bold">{{ formatCurrency(batch.totalCost) }}</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
+
                   <div
-                    v-else-if="
-                      batchDetails[item.productId] && batchDetails[item.productId].length === 0
-                    "
-                    class="text-gray-500"
+                    v-else-if="batchDetails[`${item.productId}_${item.warehouseId}`]?.length === 0"
+                    class="text-gray-500 text-center py-2"
                   >
-                    No batch details found.
+                    No batch details found for this warehouse.
                   </div>
-                  <div v-else class="text-gray-500">Loading batch details...</div>
+
+                  <div
+                    v-else
+                    class="text-gray-500 text-center py-2 flex items-center justify-center gap-2"
+                  >
+                    <div
+                      class="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"
+                    ></div>
+                    Loading batch details...
+                  </div>
                 </td>
               </tr>
             </template>
           </tbody>
         </table>
         <!-- Pagination -->
-        <div class="flex flex-col items-center justify-between border-t border-gray-200 px-5 py-4 sm:flex-row dark:border-gray-800 mt-4">
+        <div
+          class="flex flex-col items-center justify-between border-t border-gray-200 px-5 py-4 sm:flex-row dark:border-gray-800 mt-4"
+        >
           <!-- Left summary -->
           <div class="pb-3 sm:pb-0">
             <span class="block text-sm font-medium text-gray-500 dark:text-gray-400">
               Showing
-              <span class="text-gray-800 dark:text-white/90">{{ (currentPage - 1) * itemsPerPage + (paginatedInventory.length ? 1 : 0) }}</span>
+              <span class="text-gray-800 dark:text-white/90">{{
+                (currentPage - 1) * itemsPerPage + (paginatedInventory.length ? 1 : 0)
+              }}</span>
               to
-              <span class="text-gray-800 dark:text-white/90">{{ (currentPage - 1) * itemsPerPage + paginatedInventory.length }}</span>
+              <span class="text-gray-800 dark:text-white/90">{{
+                (currentPage - 1) * itemsPerPage + paginatedInventory.length
+              }}</span>
               of
               <span class="text-gray-800 dark:text-white/90">{{ totalElements }}</span>
             </span>
           </div>
 
           <!-- Controls -->
-          <div class="flex w-full items-center justify-between gap-2 rounded-lg bg-gray-50 p-4 sm:w-auto sm:justify-normal sm:bg-transparent sm:p-0 dark:bg-white/[0.03] dark:sm:bg-transparent">
+          <div
+            class="flex w-full items-center justify-between gap-2 rounded-lg bg-gray-50 p-4 sm:w-auto sm:justify-normal sm:bg-transparent sm:p-0 dark:bg-white/[0.03] dark:sm:bg-transparent"
+          >
             <button
               class="shadow-theme-xs flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 hover:text-gray-800 sm:p-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
               @click="previousPage"
@@ -296,26 +316,50 @@
             >
               <span>
                 <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z" fill=""></path>
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M2.58203 9.99868C2.58174 10.1909 2.6549 10.3833 2.80152 10.53L7.79818 15.5301C8.09097 15.8231 8.56584 15.8233 8.85883 15.5305C9.15183 15.2377 9.152 14.7629 8.85921 14.4699L5.13911 10.7472L16.6665 10.7472C17.0807 10.7472 17.4165 10.4114 17.4165 9.99715C17.4165 9.58294 17.0807 9.24715 16.6665 9.24715L5.14456 9.24715L8.85919 5.53016C9.15199 5.23717 9.15184 4.7623 8.85885 4.4695C8.56587 4.1767 8.09099 4.17685 7.79819 4.46984L2.84069 9.43049C2.68224 9.568 2.58203 9.77087 2.58203 9.99715C2.58203 9.99766 2.58203 9.99817 2.58203 9.99868Z"
+                    fill=""
+                  ></path>
                 </svg>
               </span>
             </button>
 
-            <span class="block text-sm font-medium text-gray-700 sm:hidden dark:text-gray-400">Page {{ currentPage }} of {{ totalPages }}</span>
+            <span class="block text-sm font-medium text-gray-700 sm:hidden dark:text-gray-400"
+              >Page {{ currentPage }} of {{ totalPages }}</span
+            >
 
             <ul class="hidden items-center gap-0.5 sm:flex">
               <li v-for="page in visiblePages" :key="page">
-                <a href="#" @click.prevent="goToPage(page)" :class="page === currentPage ? 'bg-brand-500 text-white' : 'hover:bg-brand-500 text-gray-700 hover:text-white dark:text-gray-400 dark:hover:text-white'" class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium">
+                <a
+                  href="#"
+                  @click.prevent="goToPage(page)"
+                  :class="
+                    page === currentPage
+                      ? 'bg-brand-500 text-white'
+                      : 'hover:bg-brand-500 text-gray-700 hover:text-white dark:text-gray-400 dark:hover:text-white'
+                  "
+                  class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium"
+                >
                   {{ page }}
                 </a>
               </li>
 
               <li v-if="visiblePages[visiblePages.length - 1] < totalPages">
-                <span class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 dark:text-gray-400">...</span>
+                <span
+                  class="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 dark:text-gray-400"
+                  >...</span
+                >
               </li>
 
               <li v-if="visiblePages[visiblePages.length - 1] < totalPages">
-                <a href="#" @click.prevent="goToPage(totalPages)" class="hover:bg-brand-500 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:text-white dark:text-gray-400 dark:hover:text-white">{{ totalPages }}</a>
+                <a
+                  href="#"
+                  @click.prevent="goToPage(totalPages)"
+                  class="hover:bg-brand-500 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium text-gray-700 hover:text-white dark:text-gray-400 dark:hover:text-white"
+                  >{{ totalPages }}</a
+                >
               </li>
             </ul>
 
@@ -327,7 +371,12 @@
             >
               <span>
                 <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z" fill=""></path>
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M17.4165 9.9986C17.4168 10.1909 17.3437 10.3832 17.197 10.53L12.2004 15.5301C11.9076 15.8231 11.4327 15.8233 11.1397 15.5305C10.8467 15.2377 10.8465 14.7629 11.1393 14.4699L14.8594 10.7472L3.33203 10.7472C2.91782 10.7472 2.58203 10.4114 2.58203 9.99715C2.58203 9.58294 2.91782 9.24715 3.33203 9.24715L14.854 9.24715L11.1393 5.53016C10.8465 5.23717 10.8467 4.7623 11.1397 4.4695C11.4327 4.1767 11.9075 4.17685 12.2003 4.46984L17.1578 9.43049C17.3163 9.568 17.4165 9.77087 17.4165 9.99715C17.4165 9.99763 17.4165 9.99812 17.4165 9.9986Z"
+                    fill=""
+                  ></path>
                 </svg>
               </span>
             </button>
@@ -397,7 +446,9 @@ function alertState(type: string, title: string, message: string) {
   alert.type = type
   alert.title = title
   alert.message = message
-  setTimeout(() => { alert.show = false }, 3000)
+  setTimeout(() => {
+    alert.show = false
+  }, 3000)
 }
 // Modals
 const showGlobalReceiveModal = ref(false)
@@ -440,16 +491,20 @@ async function fetchInventory(page = 1) {
   error.value = ''
   try {
     const pageIndex = Math.max(0, page)
-    const res = await fetch(`${baseURL}/scmlink/inventoryLevels/summary?page=${pageIndex}&size=${itemsPerPage.value}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const res = await fetch(
+      `${baseURL}/scmlink/inventoryLevels/summary?page=${pageIndex}&size=${itemsPerPage.value}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    )
     const data = await res.json()
     const pageData = data?.result || data || {}
     const content = pageData.content || pageData.items || []
     inventorySummary.value = Array.isArray(content) ? content : []
 
     totalElements.value = pageData.totalElements ?? inventorySummary.value.length
-    totalPages.value = pageData.totalPages ?? Math.max(1, Math.ceil((totalElements.value || 0) / itemsPerPage.value))
+    totalPages.value =
+      pageData.totalPages ?? Math.max(1, Math.ceil((totalElements.value || 0) / itemsPerPage.value))
     pageNumber.value = pageData.pageNumber ?? pageIndex
     currentPage.value = (pageNumber.value || 0) + 1
   } catch (e) {
@@ -514,32 +569,39 @@ onMounted(async () => {
   ])
 })
 
-// Fetch batch details
-async function fetchBatchDetails(productId: string) {
+// Hàm fetch Batch Details
+async function fetchBatchDetails(productId: string, warehouseId: string) {
+  const cacheKey = `${productId}_${warehouseId}`
   try {
     const res = await fetch(
-      `${baseURL}/scmlink/inventoryLocationDetails/batchDetails/${productId}`,
+      `${baseURL}/scmlink/inventoryLocationDetails/batchDetails/${productId}/${warehouseId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       },
     )
     const data = await res.json()
     if (data.code === 1000) {
-      batchDetails.value[productId] = data.result
-      console.log('Batch details for', data.result.locationCode)
+      // Lưu vào object với key kết hợp
+      batchDetails.value[cacheKey] = data.result
     }
   } catch {
-    batchDetails.value[productId] = []
+    batchDetails.value[cacheKey] = []
   }
 }
 
-function toggleExpand(productId: string) {
-  if (expandedId.value === productId) {
-    expandedId.value = null
+// Sử dụng một ref để lưu ID dòng đang mở (kết hợp cả Prod + Warehouse)
+const expandedKey = ref<string | null>(null)
+
+function toggleExpand(productId: string, warehouseId: string) {
+  const currentKey = `${productId}_${warehouseId}`
+
+  if (expandedKey.value === currentKey) {
+    expandedKey.value = null
   } else {
-    expandedId.value = productId
-    if (!batchDetails.value[productId]) {
-      fetchBatchDetails(productId)
+    expandedKey.value = currentKey
+    // Chỉ gọi API nếu chưa có dữ liệu trong cache
+    if (!batchDetails.value[currentKey]) {
+      fetchBatchDetails(productId, warehouseId)
     }
   }
 }
@@ -675,7 +737,7 @@ function exportCSV() {
 }
 
 watch(inventorySummary, (list) => {
-  list.forEach(item => {
+  list.forEach((item) => {
     if (item.warehouseId && !warehouseNameMap.value[item.warehouseId]) {
       getWarehouseName(item.warehouseId)
     }

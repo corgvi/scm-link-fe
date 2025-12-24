@@ -87,6 +87,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
   product: any,
@@ -135,6 +136,7 @@ async function fetchWarehouseLocations() {
 async function submit() {
   // Tính lại tổng số lượng
   form.value.totalItemsExpected = Number(form.value.products[0].quantity) || 0
+  const router = useRouter()
   const res = await fetch(`${baseURL}/scmlink/receivingNotes`, {
     method: "POST",
     headers: {
@@ -147,6 +149,7 @@ async function submit() {
   const data = await res.json()
     if (data.code === 1000) {
       emit("submitted")
+      router.replace({ name: 'AdminInventories' })
     } else {
       alertState('error', 'Error', data.message || "Failed to receive inventory")
     }

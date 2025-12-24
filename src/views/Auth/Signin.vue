@@ -302,7 +302,7 @@ const togglePasswordVisibility = () => {
 
 const handleSubmit = async () => {
   try {
-    const result = await auth.login(username.value, password.value)
+    await auth.login(username.value, password.value)
     // optionally persist keepLoggedIn flag
     if (keepLoggedIn.value) localStorage.setItem('keep_logged_in', 'true')
 

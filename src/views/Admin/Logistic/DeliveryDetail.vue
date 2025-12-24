@@ -691,44 +691,40 @@ async function initMap() {
 }
 
 // Update map with tracking data
+// Update map with tracking data
 async function updateMap() {
   if (!map.value) return
 
-  // reset
-  markers.value.forEach(m => m.remove())
+  // 1. Xóa marker cũ để tránh trùng lặp khi update
+  markers.value.forEach((m) => m.remove())
   markers.value = []
 
+  // Xóa line cũ nếu có
   if (map.value.getLayer('delivery-line')) map.value.removeLayer('delivery-line')
   if (map.value.getSource('delivery-line')) map.value.removeSource('delivery-line')
 
-  // warehouse
+  // --- Lấy dữ liệu tọa độ ---
   const warehouseLat = Number(delivery.value.warehouseLatitude)
   const warehouseLng = Number(delivery.value.warehouseLongitude)
   const hasWarehouse = Number.isFinite(warehouseLat) && Number.isFinite(warehouseLng)
 
-  // driver position
-  const latestTracking = trackingHistories.value.find(p => p.latitude && p.longitude)
+  const latestTracking = trackingHistories.value.find((p) => p.latitude && p.longitude)
   const driverLat = latestTracking ? Number(latestTracking.latitude) : NaN
   const driverLng = latestTracking ? Number(latestTracking.longitude) : NaN
   const hasDriver = Number.isFinite(driverLat) && Number.isFinite(driverLng)
 
-  // delivery orders
+  // Lấy danh sách đơn hàng và sắp xếp
   const sortedOrders = [...(delivery.value.deliveryOrders || [])].sort(
     (a, b) => (a.orderSequence ?? 0) - (b.orderSequence ?? 0),
   )
 
-  // 🧠 build route coordinates
+  // --- Tạo danh sách tọa độ để vẽ đường (Line) ---
   const coords: [number, number][] = []
 
-  if (!hasDriver && hasWarehouse) {
-    coords.push([warehouseLng, warehouseLat])
-  }
-
-  if (hasDriver) {
-    coords.push([driverLng, driverLat])
-  }
-
-  sortedOrders.forEach(o => {
+  if (hasWarehouse) coords.push([warehouseLng, warehouseLat])
+  if (hasDriver) coords.push([driverLng, driverLat])
+  
+  sortedOrders.forEach((o) => {
     const lat = Number(o.orderLatitude)
     const lng = Number(o.orderLongitude)
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
@@ -736,55 +732,94 @@ async function updateMap() {
     }
   })
 
-  if (coords.length < 2) {
-    console.warn('⚠️ Not enough coordinates to draw a route')
-    return
-  }
-
-  // MARKERS ================
-  function marker(html: string, [lng, lat]: [number, number]) {
+  // --- HÀM TẠO MARKER (Đã sửa lỗi transform) ---
+  function createMarker(html: string, [lng, lat]: [number, number], className = '') {
     const el = document.createElement('div')
+    // Thêm class để đảm bảo marker có kích thước thực
+    el.className = `marker-container ${className}`
     el.innerHTML = html
-    el.style.transform = 'translate(-50%, -50%)'
-    const m = new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(map.value)
+    
+    // ⚠️ QUAN TRỌNG: Không set el.style.transform thủ công ở đây
+    // Mapbox sẽ tự xử lý vị trí.
+    
+    const m = new mapboxgl.Marker({
+      element: el,
+      anchor: 'bottom', // Neo marker ở đáy (chân icon) để chính xác vị trí
+    })
+      .setLngLat([lng, lat])
+      .addTo(map.value)
+      
     markers.value.push(m)
   }
 
+  // --- VẼ CÁC ĐIỂM (MARKERS) ---
+
+  // 1. Kho (Warehouse)
   if (hasWarehouse) {
-    marker(`
+    createMarker(
+      `
       <div class="flex flex-col items-center">
-        <div class="bg-white shadow rounded-full p-2">🏭</div>
-        <div class="text-xs mt-1 font-medium text-gray-700">Warehouse</div>
+        <div class="bg-white shadow-md border border-gray-200 rounded-full p-1.5 text-lg z-10">🏭</div>
+        <div class="text-[10px] mt-1 font-bold text-gray-700 bg-white/80 px-1 rounded shadow-sm">KHO</div>
       </div>
-    `, [warehouseLng, warehouseLat])
+    `,
+      [warehouseLng, warehouseLat],
+      'z-0'
+    )
   }
 
-  if (hasDriver) {
-    marker(`
-      <div class="relative flex flex-col items-center">
-        <div class="relative">
-          <div class="absolute w-8 h-8 bg-blue-400 opacity-70 rounded-full animate-ping"></div>
-          <div class="relative bg-blue-600 text-white rounded-full p-2 shadow-md">🚚</div>
-        </div>
-        <div class="text-xs mt-1 text-blue-600 font-medium">Driver</div>
-      </div>
-    `, [driverLng, driverLat])
-  }
-
-  sortedOrders.forEach(o => {
+  // 2. Điểm giao hàng (Orders)
+  sortedOrders.forEach((o, index) => {
     const lat = Number(o.orderLatitude)
     const lng = Number(o.orderLongitude)
+    
+    // Log kiểm tra nếu nghi ngờ dữ liệu lỗi
+    // console.log(`Order #${o.orderSequence}:`, lat, lng)
+
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
 
-    marker(`
-      <div class="flex flex-col items-center">
-        <div class="bg-red-600 text-white rounded-full p-2 shadow">📍</div>
-        <div class="text-xs mt-1 text-red-600 font-medium">#${o.orderSequence}</div>
+    // Offset nhẹ nếu các điểm trùng nhau hoàn toàn (optional)
+    // const offset = index * 0.00005 
+
+    createMarker(
+      `
+      <div class="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110">
+        <div class="relative">
+             <div class="bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg border-2 border-white text-xs font-bold">
+                ${o.orderSequence || index + 1}
+             </div>
+             <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 rotate-45"></div>
+        </div>
+        <div class="hidden group-hover:block absolute -top-8 bg-black text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-50">
+           Đơn #${o.orderCode}
+        </div>
       </div>
-    `, [lng, lat])
+    `,
+      [lng, lat], // [lng + offset, lat + offset] nếu muốn tách điểm trùng
+      'z-10'
+    )
   })
 
-  // ROUTE ===============
+  // 3. Tài xế (Driver) - Vẽ cuối cùng để nằm trên cùng (z-index cao nhất)
+  if (hasDriver) {
+    createMarker(
+      `
+      <div class="relative flex flex-col items-center">
+        <div class="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
+        <div class="relative bg-blue-600 text-white rounded-full p-2 shadow-xl border-2 border-white z-20">
+          🚚
+        </div>
+        <div class="text-[10px] mt-1 text-blue-700 font-bold bg-white/90 px-1 rounded shadow-sm">Tài xế</div>
+      </div>
+    `,
+      [driverLng, driverLat],
+      'z-20'
+    )
+  }
+
+  // --- VẼ ĐƯỜNG NỐI (ROUTE LINE) ---
+  if (coords.length < 2) return
+
   const waypointStr = coords.map(([lng, lat]) => `${lng},${lat}`).join(';')
   const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${waypointStr}?geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`
 
@@ -792,10 +827,7 @@ async function updateMap() {
     const res = await fetch(url)
     const json = await res.json()
 
-    if (!json.routes?.length) {
-      console.warn('No route returned!')
-      return
-    }
+    if (!json.routes?.length) return
 
     const routeGeo = json.routes[0].geometry
 
@@ -813,19 +845,22 @@ async function updateMap() {
       source: 'delivery-line',
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
-        'line-color': '#2563eb',
-        'line-width': 5,
-        'line-opacity': 0.9,
+        'line-color': '#3b82f6', // blue-500
+        'line-width': 6,
+        'line-opacity': 0.8,
       },
-    })
+    }, 
+    // Vẽ line bên dưới các marker (nếu có layer text thì đặt dưới text)
+    // map.value.getStyle().layers.find(l => l.type === 'symbol')?.id 
+    )
   } catch (e) {
     console.error('Error fetching directions:', e)
   }
 
-  // FIT MAP ===============
+  // --- FIT MAP BOUNDS ---
   const bounds = new mapboxgl.LngLatBounds()
-  coords.forEach(c => bounds.extend(c))
-  map.value.fitBounds(bounds, { padding: 70, duration: 900 })
+  coords.forEach((c) => bounds.extend(c))
+  map.value.fitBounds(bounds, { padding: 100, maxZoom: 15, duration: 1000 })
 }
 
 

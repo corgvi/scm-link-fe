@@ -229,7 +229,7 @@ async function fetchOrders() {
     const data = await res.json()
     if (!data) return
     // accept multiple naming variants from API
-    const ALLOWED = ['PROCESSING', 'READY FOR SHIPMENT']
+    const ALLOWED = ['PROCESSING', 'READY_FOR_SHIPMENT']
     if (data.code === 1000 && Array.isArray(data.result.content)) {
       allOrders.value = data.result.content.filter((o: any) =>
         ALLOWED.includes((o.orderStatus || '').toString().toUpperCase()),
