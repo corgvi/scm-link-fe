@@ -488,7 +488,7 @@ const uniqueSuppliers = computed(
   () => new Set(products.value.map((p) => p.supplier?.name).filter(Boolean)).size,
 )
 const uniqueBrands = computed(
-  () => new Set(products.value.map((p) => p.branchName).filter(Boolean)).size,
+  () => new Set(products.value.map((p) => p.origin).filter(Boolean)).size,
 )
 
 function exportCSV() {
