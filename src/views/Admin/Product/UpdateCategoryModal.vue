@@ -26,7 +26,13 @@
         </button>
       </div>
 
-      <p v-if="errorMessage" class="text-sm text-red-500 text-center mt-2">{{ errorMessage }}</p>
+      <Alert
+        v-if="alert.show"
+        :variant="alert.type"
+        :title="alert.title"
+        :message="alert.message"
+        :duration="3000"
+      />
     </form>
   </div>
 </template>
@@ -38,8 +44,22 @@ const emit = defineEmits(['close', 'updated'])
 const baseURL = import.meta.env.VITE_BASE_URL
 const token = localStorage.getItem('auth_token') || ''
 
+import Alert from '@/components/ui/Alert.vue'
+import { reactive } from 'vue'
 const loading = ref(false)
-const errorMessage = ref('')
+const alert = reactive({
+  show: false,
+  type: 'error',
+  title: '',
+  message: '',
+})
+function alertState(type: string, title: string, message: string) {
+  alert.show = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+  setTimeout(() => { alert.show = false }, 3000)
+}
 const form = ref({ id: '', name: '', code: '', description: '' })
 const errors = ref({ name: '', code: '' })
 
@@ -49,7 +69,6 @@ watch(
     if (c) {
       form.value = { id: c.id, name: c.name || '', code: c.code || '', description: c.description || '' }
       errors.value = { name: '', code: '' }
-      errorMessage.value = ''
     }
   },
   { immediate: true },
@@ -62,7 +81,6 @@ function validate() {
 }
 
 async function submit() {
-  errorMessage.value = ''
   if (!validate()) return
   loading.value = true
   try {
@@ -73,13 +91,16 @@ async function submit() {
     })
     const data = await res.json()
     if (res.ok && data.code === 1000) {
-      emit('updated')
-      emit('close')
+      alertState('success', 'Success', 'Category updated successfully.')
+      setTimeout(() => {
+        emit('updated')
+        emit('close')
+      }, 900)
     } else {
-      errorMessage.value = data.message || 'Failed to update category'
+      alertState('error', 'Error', data.message || 'Failed to update category')
     }
   } catch (e) {
-    errorMessage.value = 'Network error. Please try again.'
+    alertState('error', 'Error', 'Network error. Please try again.')
   } finally {
     loading.value = false
   }

@@ -136,7 +136,7 @@
               <th class="p-4 text-left text-xs font-bold text-gray-700 dark:text-gray-400">Name</th>
               <th class="p-4 text-left text-xs font-bold text-gray-700 dark:text-gray-400">Code</th>
               <th class="p-4 text-left text-xs font-bold text-gray-700 dark:text-gray-400">
-                Branch
+                Origin
               </th>
               <th class="p-4 text-left text-xs font-bold text-gray-700 dark:text-gray-400">
                 Category
@@ -145,9 +145,9 @@
                 Supplier
               </th>
               <th class="p-4 text-left text-xs font-bold text-gray-700 dark:text-gray-400">
-                Color
+                Storage Condition
               </th>
-              <th class="p-4 text-left text-xs font-bold text-gray-700 dark:text-gray-400">Size</th>
+              <th class="p-4 text-left text-xs font-bold text-gray-700 dark:text-gray-400">Weight (g)</th>
               <th class="p-4 text-center text-xs font-bold text-gray-700 dark:text-gray-400">
                 Actions
               </th>
@@ -179,11 +179,11 @@
               <td class="p-4 text-sm font-medium">{{ product.sku }}</td>
               <td class="p-4 text-sm">{{ product.name }}</td>
               <td class="p-4 text-sm">{{ product.code }}</td>
-              <td class="p-4 text-sm">{{ product.branchName }}</td>
+              <td class="p-4 text-sm">{{ product.origin }}</td>
               <td class="p-4 text-sm">{{ product.category?.name || '-' }}</td>
               <td class="p-4 text-sm">{{ product.supplier?.name || '-' }}</td>
-              <td class="p-4 text-sm">{{ product.color || '-' }}</td>
-              <td class="p-4 text-sm">{{ product.size || '-' }}</td>
+              <td class="p-4 text-sm">{{ product.storageCondition || '-' }}</td>
+              <td class="p-4 text-sm">{{ product.weightG || '-' }}</td>
               <td class="p-4 text-center" @click.stop>
                 <ActionMainButton
                   text="Update"
@@ -316,9 +316,9 @@ interface Product {
   sku: string
   name: string
   code: string
-  branchName: string
-  color: string
-  size: string
+  origin: string
+  storageCondition: string
+  weightG: number
   category: Category
   supplier: Supplier
   imageUrl?: string
@@ -345,7 +345,7 @@ const filters = reactive({
   sku: '',
   name: '',
   code: '',
-  branchName: '',
+  origin: '',
   categoryId: '',
   supplierId: '',
 })

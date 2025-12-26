@@ -58,18 +58,15 @@
               <strong>Supplier:</strong>
               {{ product.supplier?.name || product.supplier?.code || '—' }}
             </p>
-            <p><strong>Size:</strong> {{ product.size }}</p>
 
             <p v-if="product.supplier?.phoneNumber">
               <strong>Phone:</strong> {{ product.supplier.phoneNumber }}
             </p>
-            <p><strong>Brand:</strong> {{ product.branchName }}</p>
+            <p><strong>Brand:</strong> {{ product.origin }}</p>
 
             <p v-if="product.supplier?.contactPerson">
               <strong>Contact:</strong> {{ product.supplier.contactPerson }}
             </p>
-
-            <p><strong>Color:</strong> {{ product.color }}</p>
           </div>
         </div>
       </div>
@@ -85,22 +82,12 @@
             <p class="text-gray-500 text-sm">Weight (g)</p>
             <p class="font-bold text-gray-800 dark:text-white">{{ product.weightG }}</p>
           </div>
-
           <div class="p-3 border rounded-lg dark:border-gray-700">
-            <p class="text-gray-500 text-sm">Length (cm)</p>
-            <p class="font-bold text-gray-800 dark:text-white">{{ product.lengthCm }}</p>
-          </div>
-
-          <div class="p-3 border rounded-lg dark:border-gray-700">
-            <p class="text-gray-500 text-sm">Width (cm)</p>
-            <p class="font-bold text-gray-800 dark:text-white">{{ product.widthCm }}</p>
-          </div>
-
-          <div class="p-3 border rounded-lg dark:border-gray-700">
-            <p class="text-gray-500 text-sm">Height (cm)</p>
-            <p class="font-bold text-gray-800 dark:text-white">{{ product.heightCm }}</p>
+            <p class="text-gray-500 text-sm">Storage Condition</p>
+            <p class="font-bold text-gray-800 dark:text-white">{{ product.storageCondition }}</p>
           </div>
         </div>
+
       </div>
 
       <!-- DESCRIPTION -->
@@ -136,12 +123,8 @@ const product = ref({
   description: '',
   imageUrl: '',
   weightG: '',
-  lengthCm: '',
-  widthCm: '',
-  heightCm: '',
-  branchName: '',
-  size: '',
-  color: '',
+  origin: '',
+  storageCondition: '',
   category: null as any | null,
   supplier: null as any | null,
   active: false,

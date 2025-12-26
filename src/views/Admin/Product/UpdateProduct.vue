@@ -67,66 +67,30 @@
                 />
               </div>
 
-              <!-- Branch Name -->
+              <!-- Origin -->
               <div>
-                <label class="block mb-1.5 text-sm font-medium">Branch Name</label>
+                <label class="block mb-1.5 text-sm font-medium">Origin</label>
                 <input
-                  v-model="form.branchName"
+                  v-model="form.origin"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
                 />
               </div>
 
-              <!-- Size -->
+              <!-- Storage Condition -->
               <div>
-                <label class="block mb-1.5 text-sm font-medium">Size</label>
+                <label class="block mb-1.5 text-sm font-medium">Storage Condition</label>
                 <input
-                  v-model="form.size"
+                  v-model="form.storageCondition"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
                 />
               </div>
-
-              <!-- Color -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Color</label>
-                <input
-                  v-model="form.color"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                />
-              </div>
-
+              
               <!-- Weight -->
               <div>
                 <label class="block mb-1.5 text-sm font-medium">Weight (g)</label>
                 <input
                   v-model="form.weightG"
                   type="text"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                />
-              </div>
-
-              <!-- Length -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Length (cm)</label>
-                <input
-                  v-model="form.lengthCm"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                />
-              </div>
-
-              <!-- Width -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Width (cm)</label>
-                <input
-                  v-model="form.widthCm"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                />
-              </div>
-
-              <!-- Height -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Height (cm)</label>
-                <input
-                  v-model="form.heightCm"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
                 />
               </div>
@@ -312,12 +276,8 @@ const form = reactive({
   description: '',
   imageUrl: '',
   weightG: '',
-  lengthCm: '',
-  widthCm: '',
-  heightCm: '',
-  branchName: '',
-  size: '',
-  color: '',
+  origin: '',
+  storageCondition: '',
   categoryCode: '',
   supplierCode: '',
 })

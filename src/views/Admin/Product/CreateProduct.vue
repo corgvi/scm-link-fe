@@ -71,33 +71,23 @@
                 <span v-if="showErrors && errors.code" class="text-xs text-red-500">{{ errors.code }}</span>
               </div>
 
-              <!-- Branch Name -->
+              <!-- Origin -->
               <div>
-                <label class="block mb-1.5 text-sm font-medium">Branch Name</label>
+                <label class="block mb-1.5 text-sm font-medium">Origin</label>
                 <input
-                  v-model="form.branchName"
+                  v-model="form.origin"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  :class="{ 'border-red-500': showErrors && errors.branchName }"
+                  :class="{ 'border-red-500': showErrors && errors.origin }"
                   autocomplete="off"
                 />
-                <span v-if="showErrors && errors.branchName" class="text-xs text-red-500">{{ errors.branchName }}</span>
+                <span v-if="showErrors && errors.origin" class="text-xs text-red-500">{{ errors.origin }}</span>
               </div>
 
-              <!-- Size -->
+              <!-- Storage Condition -->
               <div>
-                <label class="block mb-1.5 text-sm font-medium">Size</label>
+                <label class="block mb-1.5 text-sm font-medium">Storage Condition</label>
                 <input
-                  v-model="form.size"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
-                />
-              </div>
-
-              <!-- Color -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Color</label>
-                <input
-                  v-model="form.color"
+                  v-model="form.storageCondition"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
                   autocomplete="off"
                 />
@@ -108,42 +98,6 @@
                 <label class="block mb-1.5 text-sm font-medium">Weight (g)</label>
                 <input
                   v-model="form.weightG"
-                  type="number"
-                  min="0"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
-                />
-              </div>
-
-              <!-- Length -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Length (cm)</label>
-                <input
-                  v-model="form.lengthCm"
-                  type="number"
-                  min="0"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
-                />
-              </div>
-
-              <!-- Width -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Width (cm)</label>
-                <input
-                  v-model="form.widthCm"
-                  type="number"
-                  min="0"
-                  class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  autocomplete="off"
-                />
-              </div>
-
-              <!-- Height -->
-              <div>
-                <label class="block mb-1.5 text-sm font-medium">Height (cm)</label>
-                <input
-                  v-model="form.heightCm"
                   type="number"
                   min="0"
                   class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
@@ -305,13 +259,9 @@ const form = reactive({
   description: '',
   imageUrl: '',
   weightG: '',
-  lengthCm: '',
-  widthCm: '',
-  heightCm: '',
-  branchName: '',
+  origin: '',
   code: '',
-  size: '',
-  color: '',
+  storageCondition: '',
   categoryCode: '',
   supplierCode: '',
 })
@@ -322,7 +272,7 @@ const categories = ref<{ code: string; name: string }[]>([])
 const errors = reactive({
   name: '',
   code: '',
-  branchName: '',
+  origin: '',
   categoryCode: '',
   supplierCode: '',
 })
@@ -332,13 +282,13 @@ const showErrors = ref(false)
 const isFormValid = computed(() => {
   errors.name = form.name ? '' : 'Product name is required'
   errors.code = form.code ? '' : 'Product code is required'
-  errors.branchName = form.branchName ? '' : 'Branch name is required'
+  errors.origin = form.origin ? '' : 'Origin is required'
   errors.categoryCode = form.categoryCode ? '' : 'Category is required'
   errors.supplierCode = form.supplierCode ? '' : 'Supplier is required'
   return (
     !errors.name &&
     !errors.code &&
-    !errors.branchName &&
+    !errors.origin &&
     !errors.categoryCode &&
     !errors.supplierCode
   )
